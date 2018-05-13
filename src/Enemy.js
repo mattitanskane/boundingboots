@@ -15,6 +15,7 @@ const enemy = {
 
         this.hp = 10;
         this.isAlive = true;
+        this.isTargeted = false;
 
         return this;
     },
@@ -33,6 +34,20 @@ const enemy = {
             ctx.translate(this.xPos, canvas.height - this.height);
             ctx.fillStyle = 'beige';
             ctx.fillRect(0, 0, this.width, this.height);
+            ctx.restore();
+        }
+
+        if (this.isTargeted) {
+            ctx.save();
+            ctx.translate(this.xPos + this.width / 2 - 5, canvas.height - this.height - 20);
+            ctx.fillStyle = 'orange';
+            ctx.fillRect(0, 0, 10, 10);
+            ctx.restore();
+        } else {
+            ctx.save();
+            ctx.translate(this.xPos + this.width - 5, canvas.height - this.height - 20);
+            ctx.fillStyle = 'beige';
+            ctx.fillRect(0, 0, 10, 10);
             ctx.restore();
         }
 

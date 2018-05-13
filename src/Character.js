@@ -31,24 +31,36 @@ const character = {
 
         console.log(targets.length);
 
+        function removeMarker() {
+            targets.forEach(function(enemy) {
+                enemy.isTargeted = false;
+            });
+        }
+
         // if targetable enemies exist
         if (targets.length != 0) {
             // if no target exists
             if (!this.currentTarget) {
+                removeMarker();
                 // target the first enemy
                 this.currentTarget = targets[0];
+                targets[0].isTargeted = true;
             } else {
                 // else targetIndex is the index of currentTarget
                 let targetIndex = targets.indexOf(this.currentTarget);
                 // iterate index
                 targetIndex++;
                 if (targetIndex >= targets.length) {
+                    removeMarker();
                     // if enemy at current index is last available target
                     // go back to first enemy
                     this.currentTarget = targets[0];
+                    targets[0].isTargeted = true;
                 } else {
+                    removeMarker();
                     // else target enemy somewhere in between first and last
                     this.currentTarget = targets[targetIndex];
+                    targets[targetIndex].isTargeted = true;
                 }
             }
             console.log(this.currentTarget.name);
