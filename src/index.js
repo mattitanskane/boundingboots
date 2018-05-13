@@ -11,11 +11,11 @@ canvas.height = '300';
 const player = Object.create(character).init(canvas.width * 0.2, canvas.height * 0.7, 4, 'tomato');
 const playerControls = Object.create(controls).init(player);
 
-function displayDebug(dbg) {
+function displayDebug(dbgArray) {
     ctx.font = '16px sans-serif';
     let i = 18;
-    dbg.forEach(function(item) {
-        ctx.fillText(item, 5, i);
+    dbgArray.forEach(function(debuggableItem) {
+        ctx.fillText(debuggableItem, 5, i);
         i += 18;
     });
 }
