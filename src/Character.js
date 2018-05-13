@@ -31,21 +31,28 @@ const character = {
 
         console.log(targets.length);
 
+        // if targetable enemies exist
         if (targets.length != 0) {
+            // if no target exists
             if (!this.currentTarget) {
+                // target the first enemy
                 this.currentTarget = targets[0];
             } else {
+                // else targetIndex is the index of currentTarget
                 let targetIndex = targets.indexOf(this.currentTarget);
-
+                // iterate index
                 targetIndex++;
                 if (targetIndex >= targets.length) {
+                    // if enemy at current index is last available target
+                    // go back to first enemy
                     this.currentTarget = targets[0];
                 } else {
+                    // else target enemy somewhere in between first and last
                     this.currentTarget = targets[targetIndex];
                 }
             }
             console.log(this.currentTarget.name);
-
+        // no targetable enemies
         } else {
             console.log('no targets found');
         }
