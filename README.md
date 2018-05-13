@@ -1,15 +1,9 @@
-# Webpack ES6 boilerplate
+# HTML5 Canvas game
 
-[![tests][tests]][tests-url]
-[![coverage][cover]][cover-url]
-
-A minimalistic Webpack 2 ES6 boilerplate project.
+Project built on [a pretty good boilerpate by jluccisano](https://github.com/jluccisano/webpack-es6-boilerplate).
 
 ## Prerequisites
 
-[![node][node]][node-url]
-[![npm][npm]][npm-url]
-      
 - [Node.js](http://es6-features.org)
 
 ## Features
@@ -26,9 +20,8 @@ A minimalistic Webpack 2 ES6 boilerplate project.
 
 ## Start Dev Server
 
-1. `git clone https://github.com/jluccisano/webpack-es6-boilerplate.git`
-2. Run `npm install`
-3. Start the dev server using `npm start`
+1. Run `npm install`
+2. Start the dev server using`npm start`
 3. Open [http://localhost:9000](http://localhost:9000)
 
 
@@ -43,7 +36,7 @@ A minimalistic Webpack 2 ES6 boilerplate project.
 
 ## Licence
 
-_webpack-es6-boilerplate_ is available under MIT.
+MIT
 
 [npm]: https://img.shields.io/badge/npm-5.3.0-blue.svg
 [npm-url]: https://npmjs.com/
