@@ -40,13 +40,14 @@ const controls = {
 
         return this;
     },
-    updatePositions(canvas, player, enemies) {
+    updatePositions(canvas, player, enemies, gameGraphics) {
         // character movement, direction and oveflow prevention right
         if (player.movingRight === true) {
             player.facingRight = true;
             if (player.xPos + player.width === canvas.width) {
                 player.xPos = player.xPos;
             } else {
+                gameGraphics.xPos -= player.xVel / 4;
                 player.xPos += player.xVel;
                 enemies.forEach(enemy => {
                     enemy.xPos -= player.xVel / 2;
@@ -59,6 +60,7 @@ const controls = {
             if (player.xPos === 0) {
                 player.xPos = player.xPos;
             } else {
+                gameGraphics.xPos += player.xVel / 4;
                 player.xPos -= player.xVel;
                 enemies.forEach(enemy => {
                     enemy.xPos += player.xVel / 2;

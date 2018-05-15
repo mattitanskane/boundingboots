@@ -1,5 +1,6 @@
 import controls from './Controls';
 import character from './Character';
+import graphics from './Graphics';
 import enemy from './Enemy';
 import './index.scss';
 
@@ -8,6 +9,13 @@ const ctx = canvas.getContext('2d');
 
 canvas.width = '400';
 canvas.height = '300';
+
+const graphicsConfig = {
+    canvas,
+    xPos: 0,
+    yPos: 0
+};
+const gameGraphics = Object.create(graphics).init(graphicsConfig);
 
 const playerConfig = {
     width: 40,
@@ -79,6 +87,7 @@ function clear() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 function checkEntities() {
+    gameGraphics.update(canvas);
     player.update(canvas);
     enemies.forEach(function(enemy) {
         enemy.update(canvas);
@@ -95,7 +104,7 @@ function checkEntities() {
 function updateScreen() {
     clear();
 
-    playerControls.updatePositions(canvas, player, enemies);
+    playerControls.updatePositions(canvas, player, enemies, gameGraphics);
     checkEntities();
     displayDebug([player.xPos, player.facingRight, player.movingLeft, player.movingRight]);
 
