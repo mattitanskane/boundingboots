@@ -1,5 +1,5 @@
 const enemy = {
-    init: function(config, character) {
+    init(config, character) {
         this.width = config.width;
         this.height = config.height;
         this.xPos = config.xPos;
@@ -9,17 +9,21 @@ const enemy = {
         this.movingLeft = false;
         this.movingRight = false;
 
+        this.hp = 10;
+        this.isAlive = true;
+        this.isTargeted = false;
+        this.currentTarget;
+        this.attackRange = this.xPos + this.width * 2.5;
+        this.facingRight = true;
+
         this.name = character.name;
         this.origin = character.origin;
         this.job = character.job;
 
-        this.hp = 10;
-        this.isAlive = true;
-        this.isTargeted = false;
 
         return this;
     },
-    update: function(canvas) {
+    update(canvas) {
 
         const ctx = canvas.getContext('2d');
 
@@ -27,12 +31,6 @@ const enemy = {
             ctx.save();
             ctx.translate(this.xPos, canvas.height - this.height);
             ctx.fillStyle = this.color;
-            ctx.fillRect(0, 0, this.width, this.height);
-            ctx.restore();
-        } else {
-            ctx.save();
-            ctx.translate(this.xPos, canvas.height - this.height);
-            ctx.fillStyle = 'beige';
             ctx.fillRect(0, 0, this.width, this.height);
             ctx.restore();
         }
@@ -43,19 +41,13 @@ const enemy = {
             ctx.fillStyle = 'orange';
             ctx.fillRect(0, 0, 10, 10);
             ctx.restore();
-        } else {
-            ctx.save();
-            ctx.translate(this.xPos + this.width - 5, canvas.height - this.height - 20);
-            ctx.fillStyle = 'beige';
-            ctx.fillRect(0, 0, 10, 10);
-            ctx.restore();
         }
 
     },
-    attack: function() {
+    attack() {
         console.log('ples no kill');
     },
-    takeDamage: function(damage) {
+    takeDamage(damage) {
         console.log(this.name + ' took ' + damage + ' damage');
         this.hp -= damage;
         console.log(this.hp + ' hp left');
@@ -64,7 +56,7 @@ const enemy = {
             this.die();
         }
     },
-    die: function() {
+    die() {
         console.log(this.name + ' got destroyed');
         this.isAlive = false;
     }

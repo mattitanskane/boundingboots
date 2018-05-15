@@ -1,22 +1,22 @@
 const controls = {
-    init: function(entity, targets) {
+    init(player, targets) {
         document.addEventListener('keydown', function(e) {
             switch (e.keyCode) {
                 case 65:
                 e.preventDefault();
-                entity.movingLeft = true;
+                player.movingLeft = true;
                 break;
             case 68:
                 e.preventDefault();
-                entity.movingRight = true;
+                player.movingRight = true;
                 break;
             case 9:
                 e.preventDefault();
-                entity.target(targets);
+                player.target(targets);
                 break;
             case 70:
                 e.preventDefault();
-                entity.attack();
+                player.attack(player, player.currentTarget);
                 break;
             default:
                 break;
@@ -27,11 +27,11 @@ const controls = {
             switch (e.keyCode) {
             case 65:
                 e.preventDefault();
-                entity.movingLeft = false;
+                player.movingLeft = false;
                 break;
             case 68:
                 e.preventDefault();
-                entity.movingRight = false;
+                player.movingRight = false;
                 break;
             default:
                 break;
@@ -40,19 +40,29 @@ const controls = {
 
         return this;
     },
-    updateState: function(canvas, entity) {
-        if (entity.movingLeft === true) {
-            if (entity.xPos === 0) {
-                entity.xPos = entity.xPos;
+    updatePositions(canvas, player, enemies) {
+        // character movement, direction and oveflow prevention right
+        if (player.movingRight === true) {
+            player.facingRight = true;
+            if (player.xPos + player.width === canvas.width) {
+                player.xPos = player.xPos;
             } else {
-                entity.xPos -= 1;
+                player.xPos += player.xVel;
+                enemies.forEach(enemy => {
+                    enemy.xPos -= player.xVel / 2;
+                });
             }
         }
-        if (entity.movingRight === true) {
-            if (entity.xPos + entity.width === canvas.width) {
-                entity.xPos = entity.xPos;
+        // character movement, direction and oveflow prevention left
+        if (player.movingLeft === true) {
+            player.facingRight = false;
+            if (player.xPos === 0) {
+                player.xPos = player.xPos;
             } else {
-                entity.xPos += 1;
+                player.xPos -= player.xVel;
+                enemies.forEach(enemy => {
+                    enemy.xPos += player.xVel / 2;
+                });
             }
         }
     }

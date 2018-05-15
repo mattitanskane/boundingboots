@@ -1,5 +1,5 @@
 const character = {
-    init: function(config, character) {
+    init(config, character) {
         this.width = config.width;
         this.height = config.height;
         this.xPos = config.xPos;
@@ -10,6 +10,9 @@ const character = {
         this.movingRight = false;
 
         this.currentTarget;
+        this.attackRange;
+        this.weaponRange = this.width * 2;
+        this.facingRight = true;
 
         this.name = character.name;
         this.origin = character.origin;
@@ -17,8 +20,12 @@ const character = {
 
         return this;
     },
-    update: function(canvas) {
-
+    update(canvas) {
+        if (this.facingRight) {
+            this.attackRange = this.xPos + this.width + this.weaponRange;
+        } else {
+            this.attackRange = this.xPos - this.weaponRange;
+        }
         const ctx = canvas.getContext('2d');
 
         ctx.fillStyle = this.color;
@@ -27,10 +34,7 @@ const character = {
         ctx.fillRect(0, 0, this.width, this.height);
         ctx.restore();
     },
-    target: function(targets) {
-
-        console.log(targets.length);
-
+    target(targets) {
         function removeMarker() {
             targets.forEach(function(enemy) {
                 enemy.isTargeted = false;
@@ -38,10 +42,9 @@ const character = {
         }
 
         // if targetable enemies exist
-        if (targets.length != 0) {
+        if (targets.length > 0) {
             // if no target exists
             if (!this.currentTarget) {
-                removeMarker();
                 // target the first enemy
                 this.currentTarget = targets[0];
                 targets[0].isTargeted = true;
@@ -69,13 +72,45 @@ const character = {
             console.log('no targets found');
         }
     },
-    attack: function() {
-        if (this.currentTarget) {
-            if (this.currentTarget.isAlive) {
-                console.log(this.name + ' attacks ' + this.currentTarget.name);
-                this.currentTarget.takeDamage(1);
+    autoTarget() {
+        // call this to automatically target next enemy after previous target dies
+    },
+    attack(attacker, target) {
+
+        function targetIsReachable() {
+            if (attacker.facingRight && attacker.attackRange >= target.xPos) {
+                return true;
+            } else if (!attacker.facingRight && attacker.attackRange <= target.xPos) {
+                return true;
             } else {
-                console.log(this.name + ' attacks ' + this.currentTarget.name + '\'s corpse');
+                return false;
+            }
+        }
+        function targetIsVisible() {
+            if (attacker.facingRight && attacker.xPos + attacker.width <= target.xPos + target.width) {
+                return true;
+            } else if (!attacker.facingRight && attacker.xPos >= target.xPos) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        if (target) {
+            if ( targetIsVisible() ) {
+                if ( targetIsReachable() ) {
+                    if (target.isAlive) {
+                        console.log(attacker.name + ' attacks ' + target.name);
+                        target.takeDamage(1);
+                    } else {
+                        console.log(attacker.name + ' attacks ' + target.name + '\'s corpse');
+                    }
+
+                } else {
+                    console.log('target out of range');
+                }
+            } else {
+                console.log('cannot see the target');
             }
         } else {
             console.log('select a target');

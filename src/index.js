@@ -14,7 +14,7 @@ const playerConfig = {
     height: 100,
     xPos: canvas.width * 0.2,
     yPos: 0,
-    xVel: 4,
+    xVel: 1,
     color: 'tomato'
 };
 const playerCreator = {
@@ -35,7 +35,7 @@ const enemy1Config = {
 const enemy2Config = {
     width: 20,
     height: 60,
-    xPos: canvas.width * 0.5,
+    xPos: canvas.width * 0.2,
     yPos: canvas.height - 60,
     xVel: 3,
     color: 'magenta'
@@ -79,24 +79,25 @@ function clear() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 function checkEntities() {
+    player.update(canvas);
+    enemies.forEach(function(enemy) {
+        enemy.update(canvas);
+    });
+    // array of enemies
     enemies.forEach(function(enemy) {
         if (!enemy.isAlive) {
             enemies.splice(enemies.indexOf(enemy), 1);
             enemy = {};
         }
     });
-    console.log(enemies.length + ' enemies left ');
 }
 
 function updateScreen() {
-    checkEntities();
     clear();
-    playerControls.updateState(canvas, player);
-    player.update(canvas);
-    enemies.forEach(function(enemy) {
-        enemy.update(canvas);
-    });
-    displayDebug([player.xPos, player.movingLeft, player.movingRight]);
+
+    playerControls.updatePositions(canvas, player, enemies);
+    checkEntities();
+    displayDebug([player.xPos, player.facingRight, player.movingLeft, player.movingRight]);
 
     window.requestAnimationFrame(updateScreen);
 }
