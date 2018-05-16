@@ -47,7 +47,7 @@ const controls = {
             if (player.xPos + player.width === canvas.width) {
                 player.xPos = player.xPos;
             } else {
-                gameGraphics.xPos -= player.xVel / 4;
+                gameGraphics.xPos -= player.xVel / 1.2;
                 player.xPos += player.xVel;
                 enemies.forEach(enemy => {
                     enemy.xPos -= player.xVel / 2;
@@ -60,7 +60,7 @@ const controls = {
             if (player.xPos === 0) {
                 player.xPos = player.xPos;
             } else {
-                gameGraphics.xPos += player.xVel / 4;
+                gameGraphics.xPos += player.xVel / 1.2;
                 player.xPos -= player.xVel;
                 enemies.forEach(enemy => {
                     enemy.xPos += player.xVel / 2;
