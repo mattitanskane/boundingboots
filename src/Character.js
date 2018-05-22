@@ -77,12 +77,11 @@ const character = {
     },
     attack(attacker, target) {
 
-        function targetIsReachable() {
-            if (attacker.facingRight && attacker.attackRange >= target.xPos) {
-                return true;
-            } else if (!attacker.facingRight && attacker.attackRange <= target.xPos) {
+        function targetIsSelected() {
+            if (target) {
                 return true;
             } else {
+                console.log('select a target');
                 return false;
             }
         }
@@ -92,28 +91,42 @@ const character = {
             } else if (!attacker.facingRight && attacker.xPos >= target.xPos) {
                 return true;
             } else {
+                console.log('cannot see the target');
+                return false;
+            }
+        }
+        function targetIsReachable() {
+            if (attacker.facingRight && attacker.attackRange >= target.xPos) {
+                return true;
+            } else if (!attacker.facingRight && attacker.attackRange <= target.xPos) {
+                return true;
+            } else {
+                console.log('target out of range');
+                return false;
+            }
+        }
+        function targetIsAlive() {
+            if (target.isAlive) {
+                return true;
+            } else {
+                console.log(attacker.name + ' attacks ' + target.name + '\'s corpse');
+                return false;
+            }
+        }
+        function checkAccuracy() {
+            const roll = Math.floor(Math.random() * 100);
+            if (roll <= 40) {
+                return true;
+            } else {
+                console.log(attacker.name + ' missed ' + target.name);
                 return false;
             }
         }
 
-        if (target) {
-            if ( targetIsVisible() ) {
-                if ( targetIsReachable() ) {
-                    if (target.isAlive) {
-                        console.log(attacker.name + ' attacks ' + target.name);
-                        target.takeDamage(1);
-                    } else {
-                        console.log(attacker.name + ' attacks ' + target.name + '\'s corpse');
-                    }
-
-                } else {
-                    console.log('target out of range');
-                }
-            } else {
-                console.log('cannot see the target');
-            }
-        } else {
-            console.log('select a target');
+        // attack event
+        if ( targetIsSelected() && targetIsVisible() && targetIsReachable() && targetIsAlive() && checkAccuracy() ) {
+            console.log(attacker.name + ' attacks ' + target.name);
+            target.takeDamage(1);
         }
     }
 };
