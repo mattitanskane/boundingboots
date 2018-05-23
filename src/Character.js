@@ -12,7 +12,9 @@ const character = {
         this.currentTarget;
         this.attackRange;
         this.weaponRange = this.width * 2;
+        this.weaponDelay = 1000;
         this.facingRight = true;
+        this.inBattle = false;
 
         this.name = character.name;
         this.origin = character.origin;
@@ -72,13 +74,45 @@ const character = {
             console.log('no targets found');
         }
     },
-    autoTarget() {
-        // call this to automatically target next enemy after previous target dies
+    engage(attacker, targets) {
+
+        if (attacker.inBattle === true) {
+            console.log(attacker.name + ' engaged ' + attacker.currentTarget.name);
+        } else {
+            console.log(attacker.name + ' disengaged ' + attacker.currentTarget.name);
+        }
+
+        const interval = setInterval(function() {
+
+            if (attacker.inBattle === true) {
+                attacker.attack(attacker, targets);
+            } else {
+                clearInterval(interval);
+            }
+
+        }, this.weaponDelay);
     },
-    attack(attacker, target) {
+    attack(attacker, targets) {
+
+        console.log(attacker.currentTarget);
+        console.log(targets);
+
+        function targetNext() {
+            if (targets.length > 0) {
+                console.log('auto-targeting');
+                attacker.currentTarget = targets[0];
+                attacker.currentTarget.isTargeted = true;
+                return true;
+            } else {
+                console.log('nothing to auto-target');
+                attacker.currentTarget = null;
+                attacker.inBattle = false;
+                return false;
+            }
+        }
 
         function targetIsSelected() {
-            if (target) {
+            if (attacker.currentTarget) {
                 return true;
             } else {
                 console.log('select a target');
@@ -86,9 +120,9 @@ const character = {
             }
         }
         function targetIsVisible() {
-            if (attacker.facingRight && attacker.xPos + attacker.width <= target.xPos + target.width) {
+            if (attacker.facingRight && attacker.xPos + attacker.width <= attacker.currentTarget.xPos + attacker.currentTarget.width) {
                 return true;
-            } else if (!attacker.facingRight && attacker.xPos >= target.xPos) {
+            } else if (!attacker.facingRight && attacker.xPos >= attacker.currentTarget.xPos) {
                 return true;
             } else {
                 console.log('cannot see the target');
@@ -96,9 +130,9 @@ const character = {
             }
         }
         function targetIsReachable() {
-            if (attacker.facingRight && attacker.attackRange >= target.xPos) {
+            if (attacker.facingRight && attacker.attackRange >= attacker.currentTarget.xPos) {
                 return true;
-            } else if (!attacker.facingRight && attacker.attackRange <= target.xPos) {
+            } else if (!attacker.facingRight && attacker.attackRange <= attacker.currentTarget.xPos) {
                 return true;
             } else {
                 console.log('target out of range');
@@ -106,27 +140,57 @@ const character = {
             }
         }
         function targetIsAlive() {
-            if (target.isAlive) {
+            if (attacker.currentTarget.isAlive) {
                 return true;
             } else {
-                console.log(attacker.name + ' attacks ' + target.name + '\'s corpse');
+                //console.log(attacker.name + ' attacks ' + attacker.currentTarget.name + '\'s corpse');
                 return false;
             }
         }
-        function checkAccuracy() {
+        function rollAccuracy() {
             const roll = Math.floor(Math.random() * 100);
-            if (roll <= 40) {
+            // TODO: Add accuracy stat
+            if (roll <= 70) {
                 return true;
             } else {
-                console.log(attacker.name + ' missed ' + target.name);
+                console.log(attacker.name + ' missed ' + attacker.currentTarget.name);
                 return false;
+            }
+        }
+        function rollDamage() {
+            const roll = Math.floor(Math.random() * 100);
+            const basedmg = 3;
+            const modifier = 2;
+            let damage;
+            // TODO: Add accuracy stat
+            if (roll <= 10) {
+                console.log('critical hit!');
+                damage = basedmg * modifier;
+                return damage;
+            } else {
+                damage = basedmg;
+                return damage;
             }
         }
 
         // attack event
-        if ( targetIsSelected() && targetIsVisible() && targetIsReachable() && targetIsAlive() && checkAccuracy() ) {
-            console.log(attacker.name + ' attacks ' + target.name);
-            target.takeDamage(1);
+        if (targetIsAlive()) {
+            if ( targetIsSelected() && targetIsVisible() && targetIsReachable() ) {
+
+                if (rollAccuracy()) {
+
+
+                    console.log(attacker.name + ' attacks ' + attacker.currentTarget.name);
+                    attacker.currentTarget.takeDamage(rollDamage());
+                }
+
+                return true;
+            } else {
+                console.log('not attacking');
+                return false;
+            }
+        } else {
+            targetNext();
         }
     }
 };

@@ -16,7 +16,8 @@ const controls = {
                 break;
             case 70:
                 e.preventDefault();
-                player.attack(player, player.currentTarget);
+                player.inBattle = !player.inBattle;
+                player.engage(player, targets);
                 break;
             default:
                 break;
