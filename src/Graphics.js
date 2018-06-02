@@ -4,7 +4,6 @@ const graphics = {
         this.yPos = config.yPos;
         this.width = config.canvas.width;
         this.height = config.canvas.height;
-        this.x = 0;
 
         this.bg = new Image(this.width, this.height);
         this.bg.src = 'https://opengameart.org/sites/default/files/parallax-forest-preview.png';
