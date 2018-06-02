@@ -1,8 +1,10 @@
+import spawner from './NPC-Controller';
+
 const controls = {
-    init(player, targets) {
+    init(player) {
         document.addEventListener('keydown', function(e) {
             switch (e.keyCode) {
-                case 65:
+            case 65:
                 e.preventDefault();
                 player.movingLeft = true;
                 break;
@@ -12,12 +14,14 @@ const controls = {
                 break;
             case 9:
                 e.preventDefault();
-                player.target(targets);
+                console.log(spawner.arrayOfNPCs);
+                player.target(spawner.arrayOfNPCs);
                 break;
             case 70:
                 e.preventDefault();
+
                 player.inBattle = !player.inBattle;
-                player.engage(player, targets);
+                player.engage(player, spawner.arrayOfNPCs);
                 break;
             default:
                 break;
@@ -43,7 +47,7 @@ const controls = {
     },
     updatePositions(canvas, player, enemies, gameGraphics) {
         // character movement, direction and oveflow prevention right
-        if (player.movingRight === true) {
+        if (player.movingRight) {
             player.facingRight = true;
             if (player.xPos + player.width === canvas.width) {
                 player.xPos = player.xPos;
@@ -56,7 +60,7 @@ const controls = {
             }
         }
         // character movement, direction and oveflow prevention left
-        if (player.movingLeft === true) {
+        if (player.movingLeft) {
             player.facingRight = false;
             if (player.xPos === 0) {
                 player.xPos = player.xPos;

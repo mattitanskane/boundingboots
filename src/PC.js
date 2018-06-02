@@ -1,5 +1,5 @@
 const character = {
-    init(config, character) {
+    init(config) {
         this.width = config.width;
         this.height = config.height;
         this.xPos = config.xPos;
@@ -9,16 +9,18 @@ const character = {
         this.movingLeft = false;
         this.movingRight = false;
 
+        this.hp = 10;
+        this.isAlive = true;
         this.currentTarget;
+        this.currentAttacker;
         this.attackRange;
         this.weaponRange = this.width * 2;
         this.weaponDelay = 1000;
         this.facingRight = true;
         this.inBattle = false;
 
-        this.name = character.name;
-        this.origin = character.origin;
-        this.job = character.job;
+        this.name = config.name;
+        this.job = config.job;
 
         return this;
     },
@@ -29,6 +31,14 @@ const character = {
             this.attackRange = this.xPos - this.weaponRange;
         }
         const ctx = canvas.getContext('2d');
+
+        if (this.isAlive) {
+            ctx.save();
+            ctx.translate(this.xPos, canvas.height - this.height);
+            ctx.fillStyle = this.color;
+            ctx.fillRect(0, 0, this.width, this.height);
+            ctx.restore();
+        }
 
         ctx.fillStyle = this.color;
         ctx.save();
@@ -76,7 +86,7 @@ const character = {
     },
     engage(attacker, targets) {
 
-        if (attacker.inBattle === true) {
+        if (attacker.inBattle) {
             console.log(attacker.name + ' engaged ' + attacker.currentTarget.name);
         } else {
             console.log(attacker.name + ' disengaged ' + attacker.currentTarget.name);
@@ -84,7 +94,7 @@ const character = {
 
         const interval = setInterval(function() {
 
-            if (attacker.inBattle === true) {
+            if (attacker.inBattle) {
                 attacker.attack(attacker, targets);
             } else {
                 clearInterval(interval);
@@ -177,11 +187,15 @@ const character = {
         if (targetIsAlive()) {
             if ( targetIsSelected() && targetIsVisible() && targetIsReachable() ) {
 
+                attacker.currentTarget.currentAttacker = this;
+                attacker.currentTarget.engage();
+
                 if (rollAccuracy()) {
 
 
+
                     console.log(attacker.name + ' attacks ' + attacker.currentTarget.name);
-                    attacker.currentTarget.takeDamage(rollDamage());
+                    attacker.currentTarget.takeDamage(attacker, rollDamage());
                 }
 
                 return true;
@@ -192,6 +206,20 @@ const character = {
         } else {
             targetNext();
         }
+    },
+    takeDamage(attacker, damageTaken) {
+        this.currentAttacker = attacker;
+        console.log(this.name + ' took ' + damageTaken + ' damage');
+        this.hp -= damageTaken;
+        console.log(this.hp + ' hp left');
+
+        if (this.hp <= 0) {
+            this.die();
+        }
+    },
+    die() {
+        console.log('game over ' + this.name);
+        this.isAlive = false;
     }
 };
 

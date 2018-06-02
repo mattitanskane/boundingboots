@@ -1,9 +1,13 @@
+import game from './Game';
+import character from './PC';
 import controls from './Controls';
-import character from './Character';
 import graphics from './Graphics';
-import enemy from './Enemy';
+import spawner from './NPC-Controller';
 import './index.scss';
 
+
+const newGame = Object.create(game).init(800, 300);
+newGame.init();
 const canvas = document.querySelector('#game');
 const ctx = canvas.getContext('2d');
 
@@ -17,64 +21,26 @@ const graphicsConfig = {
 };
 const gameGraphics = Object.create(graphics).init(graphicsConfig);
 
+// TODO: needs player input
 const playerConfig = {
     width: 40,
     height: 100,
     xPos: canvas.width * 0.2,
     yPos: 0,
     xVel: 1,
-    color: 'tomato'
-};
-const playerCreator = {
-    name:'Grey',
-    origin: 'Heron',
+    color: 'tomato',
+    name: 'Grey',
     job: 'Paladin'
 };
-const player = Object.create(character).init(playerConfig, playerCreator);
+const player = Object.create(character).init(playerConfig);
+const playerControls = Object.create(controls).init(player);
 
-const enemy1Config = {
-    width: 50,
-    height: 130,
-    xPos: canvas.width * 0.7,
-    yPos: canvas.height - 130,
-    xVel: 3,
-    color: 'magenta'
-};
-const enemy2Config = {
-    width: 20,
-    height: 60,
-    xPos: canvas.width * 0.2,
-    yPos: canvas.height - 60,
-    xVel: 3,
-    color: 'magenta'
-};
-const enemy1Creator = {
-    name:'Shadow Lord',
-    origin: 'Dark Knight',
-    job: 'Xaracabarbaxbard'
-};
-const enemy2Creator = {
-    name:'Com Bat',
-    origin: 'Dark Knight',
-    job: 'Xaracabarbaxbard'
-};
-const enemy1 = Object.create(enemy).init(enemy1Config, enemy1Creator);
-const enemy2 = Object.create(enemy).init(enemy2Config, enemy2Creator);
-const enemies = [];
-enemies.push(enemy1);
-enemies.push(enemy2);
-
-const playerControls = Object.create(controls).init(player, enemies);
+// spawner needs to know width and height of the playable area in order to spawn stuff correctly
+// TODO: does it really need to know though
+const npcController = Object.create(spawner).init().spawnNPC(canvas.width, canvas.height);
+setInterval(() => npcController.spawnNPC(canvas.width, canvas.height), 20000);
 
 
-function displayDebug(dbgArray) {
-    ctx.font = '16px sans-serif';
-    let i = 18;
-    dbgArray.forEach(function(debuggableItem) {
-        ctx.fillText(debuggableItem, 5, i);
-        i += 18;
-    });
-}
 
 function initGame() {
     window.requestAnimationFrame(updateScreen);
@@ -86,16 +52,19 @@ function clear() {
     ctx.fillStyle = 'beige';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
+
 function checkEntities() {
     gameGraphics.update(canvas);
     player.update(canvas);
-    enemies.forEach(function(enemy) {
-        enemy.update(canvas);
-    });
+
     // array of enemies
-    enemies.forEach(function(enemy) {
+    npcController.arrayOfNPCs.forEach(function(enemy) {
+        // update enemy
+        enemy.update(canvas);
+
+        // keep track of existing enemies
         if (!enemy.isAlive) {
-            enemies.splice(enemies.indexOf(enemy), 1);
+            npcController.arrayOfNPCs.splice(npcController.arrayOfNPCs.indexOf(enemy), 1);
             enemy = {};
         }
     });
@@ -104,12 +73,10 @@ function checkEntities() {
 function updateScreen() {
     clear();
 
-    playerControls.updatePositions(canvas, player, enemies, gameGraphics);
+    playerControls.updatePositions(canvas, player, npcController.arrayOfNPCs, gameGraphics);
     checkEntities();
-    displayDebug([player.xPos, player.facingRight, player.movingLeft, player.movingRight]);
 
     window.requestAnimationFrame(updateScreen);
 }
-
 
 initGame();
