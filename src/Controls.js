@@ -4,21 +4,24 @@ const controls = {
             switch (e.keyCode) {
             case 65:
                 e.preventDefault();
+                // move left
                 game.player.movingLeft = true;
                 break;
             case 68:
                 e.preventDefault();
+                // move right
                 game.player.movingRight = true;
                 break;
             case 9:
                 e.preventDefault();
+                // target cycle
                 console.log(game.npcController.arrayOfNPCs);
                 game.player.target(game.npcController.arrayOfNPCs);
                 break;
             case 70:
                 e.preventDefault();
-
-                game.player.inBattle = !game.player.inBattle;
+                // engage / disengage
+                game.player.isEngaged = !game.player.isEngaged;
                 game.player.engage(game.player, game.npcController.arrayOfNPCs);
                 break;
             default:
@@ -30,10 +33,12 @@ const controls = {
             switch (e.keyCode) {
             case 65:
                 e.preventDefault();
+                // stop moving left
                 game.player.movingLeft = false;
                 break;
             case 68:
                 e.preventDefault();
+                // stop moving right
                 game.player.movingRight = false;
                 break;
             default:

@@ -12,16 +12,17 @@ const npc = {
         this.hp = 10;
         this.isAlive = true;
         this.isTargeted = false;
-        this.currentTarget;
-        this.currentAttacker;
         this.weaponRange = this.xPos + this.width * 2.5;
         this.weaponDelay = 2000;
         this.facingRight = true;
-        this.inBattle = false;
-        this.attacking = false;
 
         this.name = config.name;
         this.job = config.job;
+
+        this.isEngaged = false; // set to true in engage method
+        this.currentTarget; // set to true in player's attack function
+        this.currentAttacker; // updated in updateEntities
+        this.aggro; // updated in updateEntities
 
         return this;
     },
@@ -31,15 +32,12 @@ const npc = {
 
         // start following player if engaged
         if (this.currentAttacker) {
-            this.inBattle = true;
             if (this.currentAttacker.xPos - 20 >= this.xPos + this.width) {
                 this.xPos += this.xVel;
             }
             if (this.currentAttacker.xPos + this.currentAttacker.width + 20 <= this.xPos) {
                 this.xPos -= this.xVel;
             }
-        } else {
-            this.inBattle = false;
         }
 
         if (this.isAlive) {
@@ -59,12 +57,11 @@ const npc = {
         }
     },
     engage() {
+        this.isEngaged = true;
 
-        const interval = setInterval(function() {
+        const interval = setInterval(() => {
 
-            this.attack();
-
-            if (this.inBattle) {
+            if (this.isAlive) {
                 this.attack();
             } else {
                 clearInterval(interval);
@@ -72,22 +69,16 @@ const npc = {
 
         }, this.weaponDelay);
 
-        if (this.inBattle) {
-            console.log(this.name + ' engaged ' + this.currentAttacker.name);
+        console.log(this.name + ' engaged ' + this.currentAttacker.name);
 
-
-        } else {
-            console.log(this.name + ' disengaged ' + this.currentAttacker.name);
-        }
-
-
-
+    },
+    disengage() {
+        this.isEngaged = false;
+        console.log(this.name + ' disengaged ' + this.currentAttacker.name);
     },
     attack() {
         console.log(this.name + ' attacks ' + this.currentAttacker.name);
         this.currentAttacker.takeDamage(this, 1);
-
-
     },
     takeDamage(attacker, damageTaken) {
         this.currentAttacker = attacker;
@@ -100,6 +91,7 @@ const npc = {
         }
     },
     die() {
+        this.disengage();
         console.log(this.name + ' got destroyed');
         this.isAlive = false;
     }

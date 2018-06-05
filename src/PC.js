@@ -17,7 +17,8 @@ const character = {
         this.weaponRange = this.width * 2;
         this.weaponDelay = 1000;
         this.facingRight = true;
-        this.inBattle = false;
+
+        this.isEngaged = false;
 
         this.name = config.name;
         this.job = config.job;
@@ -86,15 +87,11 @@ const character = {
     },
     engage(attacker, targets) {
 
-        if (attacker.inBattle) {
-            console.log(attacker.name + ' engaged ' + attacker.currentTarget.name);
-        } else {
-            console.log(attacker.name + ' disengaged ' + attacker.currentTarget.name);
-        }
+        console.log(attacker.name + ' engaged ' + attacker.currentTarget.name);
 
         const interval = setInterval(function() {
 
-            if (attacker.inBattle) {
+            if (attacker.isEngaged) {
                 attacker.attack(attacker, targets);
             } else {
                 clearInterval(interval);
@@ -102,10 +99,11 @@ const character = {
 
         }, this.weaponDelay);
     },
+    disengage() {
+        console.log(this.name + ' disengaged');
+        this.isEngaged = false;
+    },
     attack(attacker, targets) {
-
-        console.log(attacker.currentTarget);
-        console.log(targets);
 
         function targetNext() {
             if (targets.length > 0) {
@@ -116,7 +114,7 @@ const character = {
             } else {
                 console.log('nothing to auto-target');
                 attacker.currentTarget = null;
-                attacker.inBattle = false;
+                attacker.disengage();
                 return false;
             }
         }
@@ -188,12 +186,8 @@ const character = {
             if ( targetIsSelected() && targetIsVisible() && targetIsReachable() ) {
 
                 attacker.currentTarget.currentAttacker = this;
-                attacker.currentTarget.engage();
 
                 if (rollAccuracy()) {
-
-
-
                     console.log(attacker.name + ' attacks ' + attacker.currentTarget.name);
                     attacker.currentTarget.takeDamage(attacker, rollDamage());
                 }

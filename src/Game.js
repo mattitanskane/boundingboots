@@ -72,6 +72,13 @@ const game = {
                 this.npcController.arrayOfNPCs.splice(this.npcController.arrayOfNPCs.indexOf(enemy), 1);
                 enemy = {};
             }
+            if (enemy.currentAttacker) {
+                enemy.aggro = true;
+            }
+
+            if (enemy.aggro && !enemy.isEngaged) {
+                enemy.engage();
+            }
         });
     },
     updateBackground() {
