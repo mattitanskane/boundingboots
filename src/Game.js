@@ -24,7 +24,6 @@ const game = {
         return this;
     },
     start() {
-        // TODO: needs player input
         const playerConfig = {
             width: 40,
             height: 100,
@@ -54,8 +53,8 @@ const game = {
     updateScreen() {
         this.clear();
 
-        this.playerController.updatePositions(this);
         this.updateBackground();
+        this.playerController.updatePositions(this);
         this.updateEntities();
 
         window.requestAnimationFrame(this.updateScreen.bind(this));
@@ -63,12 +62,10 @@ const game = {
     updateEntities() {
         this.player.update(this.canvas);
 
-        const hmm = this.canvas;
-
         // array of enemies
-        this.npcController.arrayOfNPCs.forEach(function(enemy) {
+        this.npcController.arrayOfNPCs.forEach((enemy) =>{
             // update enemy
-            enemy.update(hmm);
+            enemy.update(this.canvas);
 
             // keep track of existing enemies
             if (!enemy.isAlive) {
