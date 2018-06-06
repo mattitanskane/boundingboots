@@ -18,7 +18,7 @@ const character = {
         this.weaponDelay = 1000;
         this.facingRight = true;
 
-        this.isEngaged = false;
+        this.battleStart = false;
 
         this.name = config.name;
         this.job = config.job;
@@ -26,12 +26,13 @@ const character = {
         return this;
     },
     update(canvas) {
+        const ctx = canvas.getContext('2d');
+
         if (this.facingRight) {
             this.attackRange = this.xPos + this.width + this.weaponRange;
         } else {
             this.attackRange = this.xPos - this.weaponRange;
         }
-        const ctx = canvas.getContext('2d');
 
         if (this.isAlive) {
             ctx.save();
@@ -41,11 +42,6 @@ const character = {
             ctx.restore();
         }
 
-        ctx.fillStyle = this.color;
-        ctx.save();
-        ctx.translate(this.xPos, canvas.height - this.height);
-        ctx.fillRect(0, 0, this.width, this.height);
-        ctx.restore();
     },
     target(targets) {
         function removeMarker() {
@@ -79,7 +75,7 @@ const character = {
                     targets[targetIndex].isTargeted = true;
                 }
             }
-            console.log(this.currentTarget.name);
+            console.log('targeting ' + this.currentTarget.name);
         // no targetable enemies
         } else {
             console.log('no targets found');
@@ -91,7 +87,7 @@ const character = {
 
         const interval = setInterval(function() {
 
-            if (attacker.isEngaged) {
+            if (attacker.battleStart) {
                 attacker.attack(attacker, targets);
             } else {
                 clearInterval(interval);
@@ -101,7 +97,7 @@ const character = {
     },
     disengage() {
         console.log(this.name + ' disengaged');
-        this.isEngaged = false;
+        this.battleStart = false;
     },
     attack(attacker, targets) {
 
@@ -133,17 +129,17 @@ const character = {
             } else if (!attacker.facingRight && attacker.xPos >= attacker.currentTarget.xPos) {
                 return true;
             } else {
-                console.log('cannot see the target');
+                console.log(attacker.name + ' cannot see the target');
                 return false;
             }
         }
         function targetIsReachable() {
             if (attacker.facingRight && attacker.attackRange >= attacker.currentTarget.xPos) {
                 return true;
-            } else if (!attacker.facingRight && attacker.attackRange <= attacker.currentTarget.xPos) {
+            } else if (!attacker.facingRight && attacker.attackRange <= attacker.currentTarget.xPos + attacker.currentTarget.width) {
                 return true;
             } else {
-                console.log('target out of range');
+                console.log(attacker.name + ' cannot reach the target');
                 return false;
             }
         }
@@ -194,15 +190,14 @@ const character = {
 
                 return true;
             } else {
-                console.log('not attacking');
+                console.log(attacker.name + ' is not attacking');
                 return false;
             }
         } else {
             targetNext();
         }
     },
-    takeDamage(attacker, damageTaken) {
-        this.currentAttacker = attacker;
+    takeDamage(damageTaken) {
         console.log(this.name + ' took ' + damageTaken + ' damage');
         this.hp -= damageTaken;
         console.log(this.hp + ' hp left');

@@ -57,6 +57,10 @@ const game = {
         this.playerController.updatePositions(this);
         this.updateEntities();
 
+        if (!this.player.isAlive) {
+            this.playerController.failState();
+        }
+
         window.requestAnimationFrame(this.updateScreen.bind(this));
     },
     updateEntities() {
@@ -76,7 +80,7 @@ const game = {
                 enemy.aggro = true;
             }
 
-            if (enemy.aggro && !enemy.isEngaged) {
+            if (enemy.aggro && !enemy.battleStart && enemy.currentAttacker.isAlive) {
                 enemy.engage();
             }
         });

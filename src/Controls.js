@@ -1,5 +1,6 @@
 const controls = {
     init(game) {
+        this.game = game;
         document.addEventListener('keydown', function(e) {
             switch (e.keyCode) {
             case 65:
@@ -15,14 +16,17 @@ const controls = {
             case 9:
                 e.preventDefault();
                 // target cycle
-                console.log(game.npcController.arrayOfNPCs);
                 game.player.target(game.npcController.arrayOfNPCs);
                 break;
             case 70:
                 e.preventDefault();
                 // engage / disengage
-                game.player.isEngaged = !game.player.isEngaged;
-                game.player.engage(game.player, game.npcController.arrayOfNPCs);
+                game.player.battleStart = !game.player.battleStart;
+                if (game.player.battleStart) {
+                    game.player.engage(game.player, game.npcController.arrayOfNPCs);
+                } else {
+                    game.player.disengage();
+                }
                 break;
             default:
                 break;
@@ -40,6 +44,40 @@ const controls = {
                 e.preventDefault();
                 // stop moving right
                 game.player.movingRight = false;
+                break;
+            default:
+                break;
+            }
+        });
+
+        return this;
+    },
+    menuState() {
+
+    },
+    roamState() {
+
+    },
+    failState() {
+        document.addEventListener('keydown', function(e) {
+            switch (e.keyCode) {
+            case 65:
+                break;
+            case 68:
+                break;
+            case 9:
+                break;
+            case 70:
+                break;
+            default:
+                break;
+            }
+        });
+        document.addEventListener('keyup', function(e) {
+            switch (e.keyCode) {
+            case 65:
+                break;
+            case 68:
                 break;
             default:
                 break;
