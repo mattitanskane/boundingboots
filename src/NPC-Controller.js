@@ -17,8 +17,8 @@ const npcSpawner = {
         }
 
         // random character width and height
-        const randomWidth = Math.floor(40 + 40 * Math.random());
-        const randomHeight = Math.floor(60 + 50 * Math.random());
+        const randomWidth = Math.floor(60 + 80 * Math.random());
+        const randomHeight = Math.floor(100 + 120 * Math.random());
 
         // horizontal position is random
         const randomXPosition = Math.floor(spawnAreaWidth * Math.random());

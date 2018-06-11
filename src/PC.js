@@ -36,7 +36,7 @@ const character = {
 
         if (this.isAlive) {
             ctx.save();
-            ctx.translate(this.xPos, canvas.height - this.height);
+            ctx.translate(this.xPos, canvas.height - this.height - canvas.floor);
             ctx.fillStyle = this.color;
             ctx.fillRect(0, 0, this.width, this.height);
             ctx.restore();

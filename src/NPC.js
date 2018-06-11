@@ -35,7 +35,7 @@ const npc = {
 
         if (this.isAlive) {
             ctx.save();
-            ctx.translate(this.xPos, canvas.height - this.height);
+            ctx.translate(this.xPos, canvas.height - this.height - canvas.floor);
             ctx.fillStyle = this.color;
             ctx.fillRect(0, 0, this.width, this.height);
             ctx.restore();
@@ -52,7 +52,7 @@ const npc = {
         } else {
             // TODO: needs idle method
             ctx.save();
-            ctx.translate(this.xPos, canvas.height - this.height);
+            ctx.translate(this.xPos, canvas.height - this.height - canvas.floor);
             ctx.fillStyle = this.color;
             ctx.fillRect(0, 0, this.width, this.height);
             ctx.restore();
@@ -61,9 +61,9 @@ const npc = {
         // target marker
         if (this.isTargeted) {
             ctx.save();
-            ctx.translate(this.xPos + this.width / 2 - 5, canvas.height - this.height - 20);
+            ctx.translate(this.xPos + this.width / 2 - 10, canvas.height - canvas.floor - this.height - 30);
             ctx.fillStyle = 'orange';
-            ctx.fillRect(0, 0, 10, 10);
+            ctx.fillRect(0, 0, 20, 20);
             ctx.restore();
         }
     },
