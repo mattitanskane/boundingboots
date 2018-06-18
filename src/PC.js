@@ -83,17 +83,22 @@ const character = {
     },
     engage(attacker, targets) {
 
-        console.log(attacker.name + ' engaged ' + attacker.currentTarget.name);
+        console.log('hmmm');
 
-        const interval = setInterval(function() {
+        if (attacker && targets) {
+            console.log(attacker.name + ' engaged ' + attacker.currentTarget.name);
 
-            if (attacker.battleStart) {
-                attacker.attack(attacker, targets);
-            } else {
-                clearInterval(interval);
-            }
+            const interval = setInterval(function() {
 
-        }, this.weaponDelay);
+                if (attacker.battleStart) {
+                    attacker.attack(attacker, targets);
+                } else {
+                    clearInterval(interval);
+                }
+
+            }, this.weaponDelay);
+        }
+
     },
     disengage() {
         console.log(this.name + ' disengaged');

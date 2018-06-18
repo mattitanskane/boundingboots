@@ -1,6 +1,6 @@
-import game from './Game';
-import './index.scss';
+//import './index.scss';
+import './Refactor';
 
-const newGame = Object.create(game).init(1280, 720);
+// const newGame = Object.create(game).init(1280, 720);
 
-newGame.start();
+// newGame.start();

@@ -1,4 +1,4 @@
-import controls from './Controls';
+import handleInput from './Controls';
 import spawner from './NPC-Controller';
 import character from './PC';
 
@@ -12,15 +12,17 @@ const game = {
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
 
         this.bgImage = new Image(this.canvas.width, this.canvas.height);
-        this.bgImage.src = 'parallax-forest-preview.png';
+        this.bgImage.src = 'https://i.ytimg.com/vi/HzrhHFxTY8Y/maxresdefault.jpg';
 
         this.bgXPos = 0;
         this.bgYPos = 0;
 
         // initialized elsewhere
         this.player;
-        this.playerController;
         this.npcController;
+
+
+
 
         return this;
     },
@@ -36,7 +38,6 @@ const game = {
             job: 'Paladin'
         };
         this.player = Object.create(character).init(playerConfig);
-        this.playerController = Object.create(controls).init(this);
 
         // spawner needs to know width and height of the playable area in order to spawn stuff correctly
         // TODO: does it really need to know though
@@ -56,12 +57,14 @@ const game = {
 
         this.updateBackground();
         this.updateFloor();
-        this.playerController.updatePositions(this);
-        this.updateEntities();
 
-        if (!this.player.isAlive) {
-            this.playerController.failState();
+        handleInput(this.player);
+
+        if (this.player.isAlive) {
+            this.updatePositions();
         }
+
+        this.updateEntities();
 
         window.requestAnimationFrame(this.updateScreen.bind(this));
     },
@@ -120,6 +123,34 @@ const game = {
             this.context.fillRect(this.bgXPos + this.canvas.width, 0, this.canvas.width, this.canvas.height);
         }
         this.context.restore();
+    },
+    updatePositions() {
+        // character movement, direction and oveflow prevention right
+        if (this.player.movingRight) {
+            this.player.facingRight = true;
+            if (this.player.xPos + this.player.width === this.canvas.width) {
+                this.player.xPos = this.player.xPos;
+            } else {
+                this.bgXPos -= this.player.xVel / 1.2;
+                this.player.xPos += this.player.xVel;
+                this.npcController.arrayOfNPCs.forEach(enemy => {
+                    enemy.xPos -= this.player.xVel / 2;
+                });
+            }
+        }
+        // character movement, direction and oveflow prevention left
+        if (this.player.movingLeft) {
+            this.player.facingRight = false;
+            if (this.player.xPos === 0) {
+                this.player.xPos = this.player.xPos;
+            } else {
+                this.bgXPos += this.player.xVel / 1.2;
+                this.player.xPos -= this.player.xVel;
+                this.npcController.arrayOfNPCs.forEach(enemy => {
+                    enemy.xPos += this.player.xVel / 2;
+                });
+            }
+        }
     },
     displayDebug(dbgArray) {
         this.context.font = '16px sans-serif';
