@@ -1,119 +1,38 @@
-const controls = {
-    init(game) {
-        this.game = game;
-        document.addEventListener('keydown', function(e) {
-            switch (e.keyCode) {
-            case 65:
-                e.preventDefault();
-                // move left
-                game.player.movingLeft = true;
-                break;
-            case 68:
-                e.preventDefault();
-                // move right
-                game.player.movingRight = true;
-                break;
-            case 9:
-                e.preventDefault();
-                // target cycle
-                game.player.target(game.npcController.arrayOfNPCs);
-                break;
-            case 70:
-                e.preventDefault();
-                // engage / disengage
-                game.player.battleStart = !game.player.battleStart;
-                if (game.player.battleStart) {
-                    game.player.engage(game.player, game.npcController.arrayOfNPCs);
-                } else {
-                    game.player.disengage();
-                }
-                break;
-            default:
-                break;
-            }
-        });
-        document.addEventListener('keyup', function(e) {
-            e.preventDefault();
-            switch (e.keyCode) {
-            case 65:
-                e.preventDefault();
-                // stop moving left
-                game.player.movingLeft = false;
-                break;
-            case 68:
-                e.preventDefault();
-                // stop moving right
-                game.player.movingRight = false;
-                break;
-            default:
-                break;
-            }
-        });
+const keysDown = {};
 
-        return this;
-    },
-    menuState() {
+const cycleTarget = 9;
+const moveLeft = 65;
+const moveRight = 68;
+const engage = 70;
 
-    },
-    roamState() {
+window.addEventListener('keydown', function (e) {
+    keysDown[e.keyCode] = true;
+    console.log(e.keyCode);
+}, false);
 
-    },
-    failState() {
-        document.addEventListener('keydown', function(e) {
-            switch (e.keyCode) {
-            case 65:
-                break;
-            case 68:
-                break;
-            case 9:
-                break;
-            case 70:
-                break;
-            default:
-                break;
-            }
-        });
-        document.addEventListener('keyup', function(e) {
-            switch (e.keyCode) {
-            case 65:
-                break;
-            case 68:
-                break;
-            default:
-                break;
-            }
-        });
+window.addEventListener('keyup', function (e) {
+    delete keysDown[e.keyCode];
+}, false);
 
-        return this;
-    },
-    updatePositions(game) {
-        // character movement, direction and oveflow prevention right
-        if (game.player.movingRight) {
-            game.player.facingRight = true;
-            if (game.player.xPos + game.player.width === game.canvas.width) {
-                game.player.xPos = game.player.xPos;
-            } else {
-                game.bgXPos -= game.player.xVel / 1.2;
-                game.player.xPos += game.player.xVel;
-                game.npcController.arrayOfNPCs.forEach(enemy => {
-                    enemy.xPos -= game.player.xVel / 2;
-                });
-            }
-        }
-        // character movement, direction and oveflow prevention left
-        if (game.player.movingLeft) {
-            game.player.facingRight = false;
-            if (game.player.xPos === 0) {
-                game.player.xPos = game.player.xPos;
-            } else {
-                game.bgXPos += game.player.xVel / 1.2;
-                game.player.xPos -= game.player.xVel;
-                game.npcController.arrayOfNPCs.forEach(enemy => {
-                    enemy.xPos += game.player.xVel / 2;
-                });
-            }
-        }
+const handleInput = function(player) {
+    if (keysDown[cycleTarget]) {
+        player.target();
+    }
+    if (keysDown[moveLeft]) {
+        console.log('<<<<<');
+
+        player.facingRight = false;
+        player.xPos -= player.xVel;
+    }
+    if (keysDown[moveRight]) {
+        console.log('>>>>>');
+
+        player.facingRight = true;
+        player.xPos += player.xVel;
+    }
+    if (keysDown[engage]) {
+        player.engage();
     }
 };
 
-module.exports = controls;
+module.exports = handleInput;
