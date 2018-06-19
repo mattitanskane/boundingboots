@@ -12,7 +12,7 @@ const keysDown = {};
 const cycleTarget = 9;
 const moveLeft = 65;
 const moveRight = 68;
-const engage = 70;
+const engageButton = 70;
 
 window.addEventListener('keydown', function (e) {
     e.preventDefault();
@@ -23,6 +23,7 @@ window.addEventListener('keyup', function (e) {
     e.preventDefault();
     delete keysDown[e.keyCode];
 }, false);
+
 
 
 
@@ -88,7 +89,9 @@ components.position = {
     init(xPos, yPos, xVel) {
         this._name = 'position';
 
-        this.xPos = xPos || 0;
+        const randomXPosition = Math.floor(1280 * Math.random());
+
+        this.xPos = xPos || randomXPosition;
         this.yPos = yPos || 0;
         this.xVel = xVel || 1;
         this.facingRight = true;
@@ -163,9 +166,9 @@ components.combat = {
         this.currentTarget = null;
         this.isTargeted = null;
         this.currentAttacker = null;
-        this.attackRange = 200;
-        this.weaponRange = this.width * 2;
-        this.weaponDelay = 1000;
+        this.weaponRange = 150;
+        this.attackRange = this.weaponRange;
+        this.weaponDelay = 2000;
 
         return this;
     }
@@ -189,7 +192,7 @@ function game(width, height) {
 
     const playerControlled = Object.create(components.playerControlled).init();
     const playerAppearance = Object.create(components.appearance).init(90, 200, 'tomato');
-    const playerPosition = Object.create(components.position).init(50, 0, 1);
+    const playerPosition = Object.create(components.position).init(50, 0, 4);
     const playerLore = Object.create(components.lore).init('Aslan');
     const playerStatus = Object.create(components.status).init();
     const playerCombat = Object.create(components.combat).init();
@@ -201,18 +204,26 @@ function game(width, height) {
     player.addComponent(playerStatus);
     player.addComponent(playerCombat);
 
-    const enemy = Object.create(entity).init();
+    const NPCs = []; // for targeting
 
-    enemy.addComponent( Object.create(components.appearance).init() );
-    enemy.addComponent( Object.create(components.position).init(400) );
-    enemy.addComponent( Object.create(components.lore).init() );
-    enemy.addComponent( Object.create(components.combat).init() );
+    function spawnEnemy() {
+        const enemy = Object.create(entity).init();
 
-    console.log(player);
-    console.log(enemy);
+        enemy.addComponent( Object.create(components.appearance).init() );
+        enemy.addComponent( Object.create(components.position).init() );
+        enemy.addComponent( Object.create(components.lore).init() );
+        enemy.addComponent( Object.create(components.combat).init() );
+        enemy.addComponent( Object.create(components.status).init() );
+
+        entities.push(enemy);
+        NPCs.push(enemy);
+    }
+    spawnEnemy();
+    setInterval(spawnEnemy, 20000);
 
     entities.push(player);
-    entities.push(enemy);
+
+
 
     start();
 
@@ -261,57 +272,187 @@ function game(width, height) {
         gameArea.context.restore();
     }
 
-    function userInput(entity) {
+    function playerInput(entity) {
         // handles all user input, overflow prevention and bg parallax stuff
         // TODO: maybe center camera to player
+
+        // battle helper functions
+        function disengage() {
+            console.log(entity.components.lore.name + ' disengaged');
+            entity.components.combat.battleStart = false;
+        }
+        function targetNext() {
+            if (NPCs.length > 0) {
+                console.log('auto-targeting');
+                entity.components.combat.currentTarget = NPCs[0];
+                entity.components.combat.currentTarget.components.combat.isTargeted = true;
+                return true;
+            } else {
+                console.log('nothing to auto-target');
+                entity.components.combat.currentTarget = null;
+                disengage();
+                return false;
+            }
+        }
+
+        function hasTarget() {
+            if (entity.components.combat.currentTarget) {
+                return true;
+            } else {
+                console.log('select a target');
+                return false;
+            }
+        }
+        function targetIsVisible(target) {
+            if (entity.components.position.facingRight && entity.components.position.xPos + entity.components.appearance.width <= target.components.position.xPos + target.components.appearance.width) {
+                return true;
+            } else if (!entity.components.position.facingRight && entity.components.position.xPos >= target.components.position.xPos) {
+                return true;
+            } else {
+                console.log(entity.components.lore.name + ' cannot see the target');
+                return false;
+            }
+        }
+        function targetIsReachable(target) {
+            if (entity.components.position.facingRight && entity.components.combat.attackRange >= target.components.position.xPos) {
+                return true;
+            } else if (!entity.components.position.facingRight && entity.components.combat.attackRange <= target.components.position.xPos + target.components.appearance.width) {
+                return true;
+            } else {
+                console.log(entity.components.lore.name + ' cannot reach the target');
+                return false;
+            }
+        }
+        function targetIsAlive(target) {
+            if (target.components.status.isAlive) {
+                return true;
+            } else {
+                //console.log(attacker.name + ' attacks ' + attacker.currentTarget.name + '\'s corpse');
+                return false;
+            }
+        }
+        function rollAccuracyAgainst(target) {
+            const roll = Math.floor(Math.random() * 100);
+            // TODO: Add accuracy stat
+            if (roll <= 70) {
+                return true;
+            } else {
+                console.log(entity.components.lore.name + ' missed ' + target.components.lore.name);
+                return false;
+            }
+        }
+        function rollDamageAgainst(target) {
+
+            const roll = Math.floor(Math.random() * 100);
+            const basedmg = 3;
+            const modifier = 2;
+            let damage;
+            // TODO: Add accuracy stat
+            if (roll <= 10) {
+                console.log(target.components.lore.name + ' is struck with a critical hit!');
+                damage = basedmg * modifier;
+                return damage;
+            } else {
+                damage = basedmg;
+                return damage;
+            }
+        }
+        //
+
         if (keysDown[cycleTarget]) {
+            delete keysDown[cycleTarget];
+
             // if targetable enemies exist
-            if (entities.length > 0) {
+            if (NPCs.length > 0) {
                 // if no target exists
                 if (!entity.components.combat.currentTarget) {
                     // target the first enemy
-                    entity.components.combat.currentTarget = entities[0];
-                    entities[0].components.combat.isTargeted = true;
+                    entity.components.combat.currentTarget = NPCs[0];
+                    NPCs[0].components.combat.isTargeted = true;
                 } else {
                     // else targetIndex is the index of currentTarget
-                    let targetIndex = entities.indexOf(entity.components.combat.currentTarget);
+                    let targetIndex = NPCs.indexOf(entity.components.combat.currentTarget);
                     // iterate index
                     targetIndex++;
-                    if (targetIndex >= entities.length) {
+                    if (targetIndex >= NPCs.length) {
                         //remove marker
-                        entities.forEach(function(entity) {
+                        NPCs.forEach(function(entity) {
                             entity.components.combat.isTargeted = false;
                         });
                         // if enemy at current index is last available target
                         // go back to first enemy
-                        entity.components.combat.currentTarget = entities[0];
-                        entities[0].components.combat.isTargeted = true;
+                        entity.components.combat.currentTarget = NPCs[0];
+                        NPCs[0].components.combat.isTargeted = true;
                     } else {
                         //remove marker
-                        entities.forEach(function(entity) {
+                        NPCs.forEach(function(entity) {
                             entity.components.combat.isTargeted = false;
                         });
                         // else target enemy somewhere in between first and last
-                        entity.components.combat.currentTarget = entities[targetIndex];
-                        entities[targetIndex].components.combat.isTargeted = true;
+                        entity.components.combat.currentTarget = NPCs[targetIndex];
+                        NPCs[targetIndex].components.combat.isTargeted = true;
                     }
                 }
                 console.log('targeting ' + entity.components.combat.currentTarget.components.lore.name);
             // no targetable enemies
             } else {
-                console.log('no entities found');
+                console.log('no NPCs found');
+            }
+        }
+
+
+        if (keysDown[engageButton]) {
+            entity.components.combat.battleStart = !entity.components.combat.battleStart;
+            if (entity.components.combat.battleStart) {
+                console.log(entity.components.lore.name + ' engaged ' + entity.components.combat.currentTarget.components.lore.name);
+
+                const interval = setInterval(function() {
+
+                    if (entity.components.combat.battleStart) {
+                        //attack
+
+                        if (targetIsAlive(entity.components.combat.currentTarget)) {
+                            if ( hasTarget() && targetIsVisible(entity.components.combat.currentTarget) && targetIsReachable(entity.components.combat.currentTarget) ) {
+
+                                entity.components.combat.currentTarget.components.combat.currentAttacker = entity;
+
+                                if (rollAccuracyAgainst(entity.components.combat.currentTarget)) {
+                                    console.log(entity.components.lore.name + ' attacks ' + entity.components.combat.currentTarget.components.lore.name);
+                                    entity.components.combat.currentTarget.components.status.hp -= rollDamageAgainst(entity.components.combat.currentTarget);
+                                }
+
+                                return true;
+                            } else {
+                                console.log(entity.components.lore.name + ' is not attacking');
+                                return false;
+                            }
+                        } else {
+                            targetNext();
+                        }
+                    } else {
+                        clearInterval(interval);
+                    }
+
+                }, entity.components.combat.weaponDelay);
+            } else {
+                disengage();
             }
         }
 
         if (keysDown[moveLeft]) {
             entity.components.position.movingLeft = true;
             entity.components.position.facingRight = false;
+            entity.components.combat.attackRange = entity.components.position.xPos - entity.components.combat.weaponRange;
+
             if (entity.components.position.xPos === 0) {
                 // prevent overflow leftside
                 entity.components.position.xPos = entity.components.position.xPos;
             } else {
                 // parallax bg and move character
                 gameArea.bgXPos += entity.components.position.xVel / 1.2;
+                NPCs.forEach(NPC => {
+                    NPC.components.position.xPos += entity.components.position.xVel / 2;
+                });
                 entity.components.position.xPos -= entity.components.position.xVel;
             }
         } else {
@@ -322,33 +463,40 @@ function game(width, height) {
         if (keysDown[moveRight]) {
             entity.components.position.movingRight = true;
             entity.components.position.facingRight = true;
+            entity.components.combat.attackRange = entity.components.position.xPos + entity.components.appearance.width + entity.components.combat.weaponRange;
             if (entity.components.position.xPos + entity.components.appearance.width === gameArea.canvas.width) {
                 // prevent overflow rightside
                 entity.components.position.xPos = entity.components.position.xPos;
             } else {
                 // parallax bg and move character
                 gameArea.bgXPos -= entity.components.position.xVel / 1.2;
+                NPCs.forEach(NPC => {
+                    NPC.components.position.xPos -= entity.components.position.xVel / 2;
+                });
                 entity.components.position.xPos += entity.components.position.xVel;
             }
         } else {
             entity.components.position.movingRight = false;
             entity.components.position.xPos = entity.components.position.xPos;
         }
-
-        if (keysDown[engage]) {
-            console.log('engage target');
-        }
     }
     function render() {
         updateBackground();
         updateFloor();
         entities.forEach((entity) =>{
-            //const randomXPosition = Math.floor(spawnAreaWidth * Math.random());
             gameArea.context.save();
             gameArea.context.translate(entity.components.position.xPos, gameArea.canvas.height - entity.components.appearance.height - gameArea.canvas.floor);
             gameArea.context.fillStyle = entity.components.appearance.color;
             gameArea.context.fillRect(0, 0, entity.components.appearance.width, entity.components.appearance.height);
             gameArea.context.restore();
+
+            if (entity.components.combat.isTargeted) {
+                gameArea.context.save();
+                gameArea.context.translate(entity.components.position.xPos + entity.components.appearance.width / 2 - 10, gameArea.canvas.height - gameArea.canvas.floor - entity.components.appearance.height - 30);
+                gameArea.context.fillStyle = 'orange';
+                gameArea.context.fillRect(0, 0, 20, 20);
+                gameArea.context.restore();
+            }
         });
     }
 
@@ -357,8 +505,7 @@ function game(width, height) {
 
         entities.forEach((entity) =>{
             if (entity.components.playerControlled) {
-                const player = entity;
-                userInput(player);
+                playerInput(entity);
             }
         });
         render();
