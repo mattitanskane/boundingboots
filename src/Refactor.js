@@ -279,11 +279,11 @@ function game(width, height) {
         // TODO: maybe center camera to player
 
         // battle system functions
-        function disengage() {
+        function disengageEntityFromBattle() {
             console.log(entity.components.lore.name + ' disengaged');
             entity.components.combat.inBattle = false;
         }
-        function targetNext() {
+        function setNextTargetForEntity() {
             if (NPCs.length > 0) {
                 console.log('auto-targeting');
                 entity.components.combat.currentTarget = NPCs[0];
@@ -292,12 +292,12 @@ function game(width, height) {
             } else {
                 console.log('nothing to auto-target');
                 entity.components.combat.currentTarget = null;
-                disengage();
+                disengageEntityFromBattle();
                 return false;
             }
         }
 
-        function hasTarget() {
+        function entityHasATarget() {
             if (entity.components.combat.currentTarget) {
                 return true;
             } else {
@@ -305,7 +305,7 @@ function game(width, height) {
                 return false;
             }
         }
-        function targetIsVisible(target) {
+        function checkVisibilityOfTarget(target) {
             if (entity.components.position.facingRight && entity.components.position.xPos + entity.components.appearance.width <= target.components.position.xPos + target.components.appearance.width) {
                 return true;
             } else if (!entity.components.position.facingRight && entity.components.position.xPos >= target.components.position.xPos) {
@@ -315,7 +315,7 @@ function game(width, height) {
                 return false;
             }
         }
-        function targetIsReachable(target) {
+        function checkReachabilityOfTarget(target) {
             if (entity.components.position.facingRight && entity.components.combat.attackRange >= target.components.position.xPos) {
                 return true;
             } else if (!entity.components.position.facingRight && entity.components.combat.attackRange <= target.components.position.xPos + target.components.appearance.width) {
@@ -325,7 +325,7 @@ function game(width, height) {
                 return false;
             }
         }
-        function targetIsAlive(target) {
+        function checkAliveStatusOfTarget(target) {
             if (target.components.status.isAlive) {
                 return true;
             } else {
@@ -359,8 +359,8 @@ function game(width, height) {
                 return damage;
             }
         }
-        function attack() {
-            if ( hasTarget() && !entity.components.combat.battleTransition) {
+        function engageEntityInBattle() {
+            if ( entityHasATarget() && !entity.components.combat.battleTransition) {
                 // transition delay, prevents engage/disengage spam
                 entity.components.combat.battleTransition = true;
                 setTimeout(() => {
@@ -377,8 +377,8 @@ function game(width, height) {
                         if (entity.components.combat.inBattle) {
                             //attack
 
-                            if (targetIsAlive(entity.components.combat.currentTarget)) {
-                                if (targetIsVisible(entity.components.combat.currentTarget) && targetIsReachable(entity.components.combat.currentTarget) ) {
+                            if (checkAliveStatusOfTarget(entity.components.combat.currentTarget)) {
+                                if (checkVisibilityOfTarget(entity.components.combat.currentTarget) && checkReachabilityOfTarget(entity.components.combat.currentTarget) ) {
 
                                     entity.components.combat.currentTarget.components.combat.currentAttacker = entity;
 
@@ -393,7 +393,7 @@ function game(width, height) {
                                     return false;
                                 }
                             } else {
-                                targetNext();
+                                setNextTargetForEntity();
                             }
                         } else {
                             clearInterval(interval);
@@ -401,7 +401,7 @@ function game(width, height) {
 
                     }, entity.components.combat.weaponDelay);
                 } else {
-                    disengage();
+                    disengageEntityFromBattle;
                 }
             }
         }
@@ -412,12 +412,12 @@ function game(width, height) {
                 entity.components.combat.currentTarget = null;
                 console.log('deselected target');
             } else if (entity.components.combat.inBattle) {
-                disengage();
+                disengageEntityFromBattle;
             } else {
                 console.log('nothing to deselect');
             }
         }
-        function goLeft() {
+        function moveEntityLeft() {
             entity.components.position.movingLeft = true;
             entity.components.position.facingRight = false;
             entity.components.combat.attackRange = entity.components.position.xPos - entity.components.combat.weaponRange;
@@ -434,11 +434,11 @@ function game(width, height) {
                 entity.components.position.xPos -= entity.components.position.xVel;
             }
         }
-        function stopGoingLeft() {
+        function stopEntityFromMovingLeft() {
             entity.components.position.movingLeft = false;
             entity.components.position.xPos = entity.components.position.xPos;
         }
-        function goRight() {
+        function moveEntityRight() {
             entity.components.position.movingRight = true;
             entity.components.position.facingRight = true;
             entity.components.combat.attackRange = entity.components.position.xPos + entity.components.appearance.width + entity.components.combat.weaponRange;
@@ -454,11 +454,11 @@ function game(width, height) {
                 entity.components.position.xPos += entity.components.position.xVel;
             }
         }
-        function stopGoingRight() {
+        function stopEntityFromMovingRight() {
             entity.components.position.movingRight = false;
             entity.components.position.xPos = entity.components.position.xPos;
         }
-        function getNextTarget() {
+        function setTargetForEntity() {
             delete keysDown[cycleTarget];
 
             // if targetable enemies exist
@@ -501,11 +501,11 @@ function game(width, height) {
         //
 
         if (keysDown[cycleTarget]) {
-            getNextTarget();
+            setTargetForEntity();
         }
 
         if (keysDown[engageButton]) {
-            attack();
+            engageEntityInBattle();
         }
 
         if (keysDown[escButton]) {
@@ -513,15 +513,15 @@ function game(width, height) {
         }
 
         if (keysDown[moveLeft]) {
-            goLeft();
+            moveEntityLeft();
         } else {
-            stopGoingLeft();
+            stopEntityFromMovingLeft();
         }
 
         if (keysDown[moveRight]) {
-            goRight();
+            moveEntityRight();
         } else {
-            stopGoingRight();
+            stopEntityFromMovingRight();
         }
     }
     function render() {
