@@ -519,6 +519,20 @@ function game(width, height) {
                 gameArea.context.fillRect(0, 0, 20, 20);
                 gameArea.context.restore();
             }
+            if (entity.components.combat.currentAttacker) {
+                // start following player if engaged
+                if (entity.components.combat.currentAttacker.components.position.xPos - 20 >= entity.components.position.xPos + entity.components.appearance.width) {
+                    entity.components.position.xPos += entity.components.position.xVel;
+                    // crudely face right
+                    entity.components.position.facingRight = true;
+                }
+                if (entity.components.combat.currentAttacker.components.position.xPos + entity.components.combat.currentAttacker.components.appearance.width + 20 <= entity.components.position.xPos) {
+                    entity.components.position.xPos -= entity.components.position.xVel;
+                    // crudely face left
+                    entity.components.position.facingRight = false;
+                }
+            }
+
         });
     }
 
