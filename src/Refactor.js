@@ -278,7 +278,7 @@ function game(width, height) {
         // handles all user input, overflow prevention and bg parallax stuff
         // TODO: maybe center camera to player
 
-        // battle helper functions
+        // battle system functions
         function disengage() {
             console.log(entity.components.lore.name + ' disengaged');
             entity.components.combat.inBattle = false;
@@ -405,6 +405,7 @@ function game(width, height) {
                 }
             }
         }
+        //movement functions
         function nopeCancelGoBackRevertJustLeave() {
             if (entity.components.combat.currentTarget && !entity.components.combat.inBattle) {
                 entity.components.combat.currentTarget.components.combat.isTargeted = false;
