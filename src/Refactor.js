@@ -359,51 +359,7 @@ function game(width, height) {
                 return damage;
             }
         }
-        //
-
-        if (keysDown[cycleTarget]) {
-            delete keysDown[cycleTarget];
-
-            // if targetable enemies exist
-            if (NPCs.length > 0) {
-                // if no target exists
-                if (!entity.components.combat.currentTarget) {
-                    // target the first enemy
-                    entity.components.combat.currentTarget = NPCs[0];
-                    NPCs[0].components.combat.isTargeted = true;
-                } else {
-                    // else targetIndex is the index of currentTarget
-                    let targetIndex = NPCs.indexOf(entity.components.combat.currentTarget);
-                    // iterate index
-                    targetIndex++;
-                    if (targetIndex >= NPCs.length) {
-                        //remove marker
-                        NPCs.forEach(function(entity) {
-                            entity.components.combat.isTargeted = false;
-                        });
-                        // if enemy at current index is last available target
-                        // go back to first enemy
-                        entity.components.combat.currentTarget = NPCs[0];
-                        NPCs[0].components.combat.isTargeted = true;
-                    } else {
-                        //remove marker
-                        NPCs.forEach(function(entity) {
-                            entity.components.combat.isTargeted = false;
-                        });
-                        // else target enemy somewhere in between first and last
-                        entity.components.combat.currentTarget = NPCs[targetIndex];
-                        NPCs[targetIndex].components.combat.isTargeted = true;
-                    }
-                }
-                console.log('targeting ' + entity.components.combat.currentTarget.components.lore.name);
-            // no targetable enemies
-            } else {
-                console.log('no NPCs found');
-            }
-        }
-
-
-        if (keysDown[engageButton]) {
+        function attack() {
             if ( hasTarget() && !entity.components.combat.battleTransition) {
                 // transition delay, prevents engage/disengage spam
                 entity.components.combat.battleTransition = true;
@@ -449,7 +405,7 @@ function game(width, height) {
                 }
             }
         }
-        if (keysDown[escButton]) {
+        function nopeCancelGoBackRevertJustLeave() {
             if (entity.components.combat.currentTarget && !entity.components.combat.inBattle) {
                 entity.components.combat.currentTarget.components.combat.isTargeted = false;
                 entity.components.combat.currentTarget = null;
@@ -460,8 +416,7 @@ function game(width, height) {
                 console.log('nothing to deselect');
             }
         }
-
-        if (keysDown[moveLeft]) {
+        function goLeft() {
             entity.components.position.movingLeft = true;
             entity.components.position.facingRight = false;
             entity.components.combat.attackRange = entity.components.position.xPos - entity.components.combat.weaponRange;
@@ -477,12 +432,12 @@ function game(width, height) {
                 });
                 entity.components.position.xPos -= entity.components.position.xVel;
             }
-        } else {
+        }
+        function stopGoingLeft() {
             entity.components.position.movingLeft = false;
             entity.components.position.xPos = entity.components.position.xPos;
         }
-
-        if (keysDown[moveRight]) {
+        function goRight() {
             entity.components.position.movingRight = true;
             entity.components.position.facingRight = true;
             entity.components.combat.attackRange = entity.components.position.xPos + entity.components.appearance.width + entity.components.combat.weaponRange;
@@ -497,9 +452,75 @@ function game(width, height) {
                 });
                 entity.components.position.xPos += entity.components.position.xVel;
             }
-        } else {
+        }
+        function stopGoingRight() {
             entity.components.position.movingRight = false;
             entity.components.position.xPos = entity.components.position.xPos;
+        }
+        function getNextTarget() {
+            delete keysDown[cycleTarget];
+
+            // if targetable enemies exist
+            if (NPCs.length > 0) {
+                // if no target exists
+                if (!entity.components.combat.currentTarget) {
+                    // target the first enemy
+                    entity.components.combat.currentTarget = NPCs[0];
+                    NPCs[0].components.combat.isTargeted = true;
+                } else {
+                    // else targetIndex is the index of currentTarget
+                    let targetIndex = NPCs.indexOf(entity.components.combat.currentTarget);
+                    // iterate index
+                    targetIndex++;
+                    if (targetIndex >= NPCs.length) {
+                        //remove marker
+                        NPCs.forEach(function(entity) {
+                            entity.components.combat.isTargeted = false;
+                        });
+                        // if enemy at current index is last available target
+                        // go back to first enemy
+                        entity.components.combat.currentTarget = NPCs[0];
+                        NPCs[0].components.combat.isTargeted = true;
+                    } else {
+                        //remove marker
+                        NPCs.forEach(function(entity) {
+                            entity.components.combat.isTargeted = false;
+                        });
+                        // else target enemy somewhere in between first and last
+                        entity.components.combat.currentTarget = NPCs[targetIndex];
+                        NPCs[targetIndex].components.combat.isTargeted = true;
+                    }
+                }
+                console.log('targeting ' + entity.components.combat.currentTarget.components.lore.name);
+            // no targetable enemies
+            } else {
+                console.log('no NPCs found');
+            }
+        }
+        //
+
+        if (keysDown[cycleTarget]) {
+            getNextTarget();
+        }
+
+        if (keysDown[engageButton]) {
+            attack();
+        }
+
+        if (keysDown[escButton]) {
+            nopeCancelGoBackRevertJustLeave();
+        }
+
+        if (keysDown[moveLeft]) {
+            goLeft();
+        } else {
+            stopGoingLeft();
+        }
+
+        if (keysDown[moveRight]) {
+            goRight();
+        } else {
+            stopGoingRight();
         }
     }
     function render() {
