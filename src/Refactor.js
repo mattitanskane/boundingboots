@@ -13,6 +13,7 @@ const cycleTarget = 9;
 const moveLeft = 65;
 const moveRight = 68;
 const engageButton = 70;
+const escButton = 27;
 
 window.addEventListener('keydown', function (e) {
     e.preventDefault();
@@ -162,13 +163,14 @@ components.stats = {
 components.combat = {
     init() {
         this._name = 'combat';
-        this.battleStart = false;
+        this.inBattle = false;
         this.currentTarget = null;
         this.isTargeted = null;
         this.currentAttacker = null;
         this.weaponRange = 150;
         this.attackRange = this.weaponRange;
         this.weaponDelay = 2000;
+        this.battleTransition = false;
 
         return this;
     }
@@ -279,7 +281,7 @@ function game(width, height) {
         // battle helper functions
         function disengage() {
             console.log(entity.components.lore.name + ' disengaged');
-            entity.components.combat.battleStart = false;
+            entity.components.combat.inBattle = false;
         }
         function targetNext() {
             if (NPCs.length > 0) {
@@ -402,40 +404,60 @@ function game(width, height) {
 
 
         if (keysDown[engageButton]) {
-            entity.components.combat.battleStart = !entity.components.combat.battleStart;
-            if (entity.components.combat.battleStart) {
-                console.log(entity.components.lore.name + ' engaged ' + entity.components.combat.currentTarget.components.lore.name);
+            if ( hasTarget() && !entity.components.combat.battleTransition) {
+                // transition delay, prevents engage/disengage spam
+                entity.components.combat.battleTransition = true;
+                setTimeout(() => {
+                    entity.components.combat.battleTransition = false;
+                }, 1000);
 
-                const interval = setInterval(function() {
+                entity.components.combat.inBattle = !entity.components.combat.inBattle;
+                if (entity.components.combat.inBattle) {
+                    console.log(entity.components.lore.name + ' engaged ' + entity.components.combat.currentTarget.components.lore.name);
 
-                    if (entity.components.combat.battleStart) {
-                        //attack
+                    // attack loop
+                    const interval = setInterval(function() {
 
-                        if (targetIsAlive(entity.components.combat.currentTarget)) {
-                            if ( hasTarget() && targetIsVisible(entity.components.combat.currentTarget) && targetIsReachable(entity.components.combat.currentTarget) ) {
+                        if (entity.components.combat.inBattle) {
+                            //attack
 
-                                entity.components.combat.currentTarget.components.combat.currentAttacker = entity;
+                            if (targetIsAlive(entity.components.combat.currentTarget)) {
+                                if (targetIsVisible(entity.components.combat.currentTarget) && targetIsReachable(entity.components.combat.currentTarget) ) {
 
-                                if (rollAccuracyAgainst(entity.components.combat.currentTarget)) {
-                                    console.log(entity.components.lore.name + ' attacks ' + entity.components.combat.currentTarget.components.lore.name);
-                                    entity.components.combat.currentTarget.components.status.hp -= rollDamageAgainst(entity.components.combat.currentTarget);
+                                    entity.components.combat.currentTarget.components.combat.currentAttacker = entity;
+
+                                    if (rollAccuracyAgainst(entity.components.combat.currentTarget)) {
+                                        console.log(entity.components.lore.name + ' attacks ' + entity.components.combat.currentTarget.components.lore.name);
+                                        entity.components.combat.currentTarget.components.status.hp -= rollDamageAgainst(entity.components.combat.currentTarget);
+                                    }
+
+                                    return true;
+                                } else {
+                                    console.log(entity.components.lore.name + ' is not attacking');
+                                    return false;
                                 }
-
-                                return true;
                             } else {
-                                console.log(entity.components.lore.name + ' is not attacking');
-                                return false;
+                                targetNext();
                             }
                         } else {
-                            targetNext();
+                            clearInterval(interval);
                         }
-                    } else {
-                        clearInterval(interval);
-                    }
 
-                }, entity.components.combat.weaponDelay);
-            } else {
+                    }, entity.components.combat.weaponDelay);
+                } else {
+                    disengage();
+                }
+            }
+        }
+        if (keysDown[escButton]) {
+            if (entity.components.combat.currentTarget && !entity.components.combat.inBattle) {
+                entity.components.combat.currentTarget.components.combat.isTargeted = false;
+                entity.components.combat.currentTarget = null;
+                console.log('deselected target');
+            } else if (entity.components.combat.inBattle) {
                 disengage();
+            } else {
+                console.log('nothing to deselect');
             }
         }
 
