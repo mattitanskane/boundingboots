@@ -182,7 +182,7 @@ components.idleBehaviour = {
         // idleDirection left, right, none
         this.idleDirection = null;
         this.idleAnimationDuration = 1300;
-        this.idlePauseDuration = 12300;
+        this.idlePauseDuration = 5300;
 
         return this;
     }
@@ -206,7 +206,7 @@ function game(width, height) {
 
     const playerControlled = Object.create(components.playerControlled).init();
     const playerAppearance = Object.create(components.appearance).init(90, 200, 'tomato');
-    const playerPosition = Object.create(components.position).init(50, 0, 4);
+    const playerPosition = Object.create(components.position).init(50, 0, 2.5);
     const playerLore = Object.create(components.lore).init('Aslan');
     const playerStatus = Object.create(components.status).init();
     const playerCombat = Object.create(components.combat).init();
@@ -430,18 +430,24 @@ function game(width, height) {
         entity.components.position.movingLeft = true;
         entity.components.position.facingRight = false;
         entity.components.combat.attackRange = entity.components.position.xPos - entity.components.combat.weaponRange;
-        if (entity.components.position.xPos <= 0) {
-            // prevent overflow leftside
-            entity.components.position.xPos = entity.components.position.xPos;
-        } else {
-            // parallax bg and move NPCs related to player movement
-            if (entity.components.playerControlled) {
+
+        //NPC
+        if (!entity.components.playerControlled) {
+            entity.components.position.xPos -= entity.components.position.xVel;
+        }
+        //PC
+        if (entity.components.playerControlled) {
+            if (entity.components.position.xPos <= 0) {
+                // prevent overflow leftside
+                entity.components.position.xPos = entity.components.position.xPos;
+            } else {
+                // parallax bg and move NPCs related to player movement
                 gameArea.bgXPos += entity.components.position.xVel / 1.2;
                 NPCs.forEach(NPC => {
                     NPC.components.position.xPos += entity.components.position.xVel / 2;
                 });
+                entity.components.position.xPos -= entity.components.position.xVel;
             }
-            entity.components.position.xPos -= entity.components.position.xVel;
         }
     }
     function stopEntityFromMovingLeft(entity) {
@@ -452,18 +458,23 @@ function game(width, height) {
         entity.components.position.movingRight = true;
         entity.components.position.facingRight = true;
         entity.components.combat.attackRange = entity.components.position.xPos + entity.components.appearance.width + entity.components.combat.weaponRange;
-        if (entity.components.position.xPos + entity.components.appearance.width >= gameArea.canvas.width) {
-            // prevent overflow rightside
-            entity.components.position.xPos = entity.components.position.xPos;
-        } else {
-            // parallax bg and move NPCs related to player movement
-            if (entity.components.playerControlled) {
+        //NPC
+        if (!entity.components.playerControlled) {
+            entity.components.position.xPos += entity.components.position.xVel;
+        }
+        //PC
+        if (entity.components.playerControlled) {
+            if (entity.components.position.xPos + entity.components.appearance.width >= gameArea.canvas.width) {
+                // prevent overflow rightside
+                entity.components.position.xPos = entity.components.position.xPos;
+            } else {
+                // parallax bg and move NPCs related to player movement
                 gameArea.bgXPos -= entity.components.position.xVel / 1.2;
                 NPCs.forEach(NPC => {
                     NPC.components.position.xPos -= entity.components.position.xVel / 2;
                 });
+                entity.components.position.xPos += entity.components.position.xVel;
             }
-            entity.components.position.xPos += entity.components.position.xVel;
         }
     }
     function stopEntityFromMovingRight(entity) {
