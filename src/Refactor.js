@@ -44,7 +44,7 @@ const entity = {
         return component._name;
     },
     removeComponent(componentName) {
-        console.log('I should remove the ' + componentName + ' component');
+        delete this.components[componentName];
         return componentName;
     }
 };
@@ -167,7 +167,7 @@ components.combat = {
         this.currentTarget = null;
         this.isTargeted = null;
         this.currentAttacker = null;
-        this.weaponRange = 150;
+        this.weaponRange = 50;
         this.attackRange = this.weaponRange;
         this.weaponDelay = 2000;
         this.battleTransition = false;
@@ -181,8 +181,8 @@ components.idleBehaviour = {
         this.isIdle = true;
         // idleDirection left, right, none
         this.idleDirection = null;
-        this.idleAnimationDuration = 1300;
-        this.idlePauseDuration = 5300;
+        this.idleAnimationDuration = Math.random() * 2000;
+        this.idlePauseDuration = 2500 + Math.random() * 10000;
 
         return this;
     }
@@ -234,7 +234,8 @@ function game(width, height) {
         NPCs.push(enemy);
     }
     spawnEnemy();
-    setInterval(spawnEnemy, 20000);
+    const enemySpawnInterval = 20000;
+    setInterval(spawnEnemy, enemySpawnInterval);
 
     entities.push(player);
 
@@ -289,8 +290,15 @@ function game(width, height) {
     }
 
     function disengageEntityFromBattle(entity) {
-        console.log(entity.components.lore.name + ' disengaged');
-        entity.components.combat.inBattle = false;
+        if (!entity.components.combat.battleTransition) {
+            console.log(entity.components.lore.name + ' disengaged');
+            entity.components.combat.inBattle = false;
+            // transition delay, prevents engage/disengage spam
+            entity.components.combat.battleTransition = true;
+            setTimeout(() => {
+                entity.components.combat.battleTransition = false;
+            }, 1000);
+        }
     }
     function setNextTargetForEntity(entity) {
         if (NPCs.length > 0) {
@@ -301,7 +309,7 @@ function game(width, height) {
         } else {
             console.log('nothing to auto-target');
             entity.components.combat.currentTarget = null;
-            disengageEntityFromBattle();
+            disengageEntityFromBattle(entity);
             return false;
         }
     }
@@ -314,45 +322,45 @@ function game(width, height) {
             return false;
         }
     }
-    function checkVisibilityOfTarget(target) {
-        if (entity.components.position.facingRight && entity.components.position.xPos + entity.components.appearance.width <= target.components.position.xPos + target.components.appearance.width) {
+    function checkEntityTargetVisibility(entity) {
+        if (entity.components.position.facingRight && entity.components.position.xPos + entity.components.appearance.width <= entity.components.combat.currentTarget.components.position.xPos + entity.components.combat.currentTarget.components.appearance.width) {
             return true;
-        } else if (!entity.components.position.facingRight && entity.components.position.xPos >= target.components.position.xPos) {
+        } else if (!entity.components.position.facingRight && entity.components.position.xPos >= entity.components.combat.currentTarget.components.position.xPos) {
             return true;
         } else {
             console.log(entity.components.lore.name + ' cannot see the target');
             return false;
         }
     }
-    function checkReachabilityOfTarget(target) {
-        if (entity.components.position.facingRight && entity.components.combat.attackRange >= target.components.position.xPos) {
+    function checkIfEntityCanReachTarget(entity) {
+        if (entity.components.position.facingRight && entity.components.combat.attackRange >= entity.components.combat.currentTarget.components.position.xPos) {
             return true;
-        } else if (!entity.components.position.facingRight && entity.components.combat.attackRange <= target.components.position.xPos + target.components.appearance.width) {
+        } else if (!entity.components.position.facingRight && entity.components.combat.attackRange <= entity.components.combat.currentTarget.components.position.xPos + entity.components.combat.currentTarget.components.appearance.width) {
             return true;
         } else {
             console.log(entity.components.lore.name + ' cannot reach the target');
             return false;
         }
     }
-    function checkAliveStatusOfTarget(target) {
-        if (target.components.status.isAlive) {
+    function checkEntityTargetAliveStatus(entity) {
+        if (entity.components.combat.currentTarget.components.status.isAlive) {
             return true;
         } else {
             //console.log(attacker.name + ' attacks ' + attacker.currentTarget.name + '\'s corpse');
             return false;
         }
     }
-    function rollAccuracyAgainst(target) {
+    function rollEntityAccuracy(entity) {
         const roll = Math.floor(Math.random() * 100);
         // TODO: Add accuracy stat
         if (roll <= 70) {
             return true;
         } else {
-            console.log(entity.components.lore.name + ' missed ' + target.components.lore.name);
+            console.log(entity.components.lore.name + ' missed ' + entity.components.combat.currentTarget.components.lore.name);
             return false;
         }
     }
-    function rollDamageAgainst(target) {
+    function rollEntityDamage(entity) {
 
         const roll = Math.floor(Math.random() * 100);
         const basedmg = 3;
@@ -360,7 +368,7 @@ function game(width, height) {
         let damage;
         // TODO: Add accuracy stat
         if (roll <= 10) {
-            console.log(target.components.lore.name + ' is struck with a critical hit!');
+            console.log(entity.components.combat.currentTarget.components.lore.name + ' is struck with a critical hit!');
             damage = basedmg * modifier;
             return damage;
         } else {
@@ -369,48 +377,91 @@ function game(width, height) {
         }
     }
     function engageEntityInBattle(entity) {
-        if ( entityHasATarget() && !entity.components.combat.battleTransition) {
+        if ( entityHasATarget(entity) && !entity.components.combat.battleTransition) {
+            entity.components.combat.inBattle = true;
             // transition delay, prevents engage/disengage spam
             entity.components.combat.battleTransition = true;
             setTimeout(() => {
                 entity.components.combat.battleTransition = false;
             }, 1000);
 
-            entity.components.combat.inBattle = !entity.components.combat.inBattle;
             if (entity.components.combat.inBattle) {
                 console.log(entity.components.lore.name + ' engaged ' + entity.components.combat.currentTarget.components.lore.name);
 
                 // attack loop
                 const interval = setInterval(function() {
 
+                    // stop loop if battle status changes
+
                     if (entity.components.combat.inBattle) {
-                        //attack
-
-                        if (checkAliveStatusOfTarget(entity.components.combat.currentTarget)) {
-                            if (checkVisibilityOfTarget(entity.components.combat.currentTarget) && checkReachabilityOfTarget(entity.components.combat.currentTarget) ) {
-
-                                entity.components.combat.currentTarget.components.combat.currentAttacker = entity;
-
-                                if (rollAccuracyAgainst(entity.components.combat.currentTarget)) {
-                                    console.log(entity.components.lore.name + ' attacks ' + entity.components.combat.currentTarget.components.lore.name);
-                                    entity.components.combat.currentTarget.components.status.hp -= rollDamageAgainst(entity.components.combat.currentTarget);
-                                }
-
-                                return true;
-                            } else {
-                                console.log(entity.components.lore.name + ' is not attacking');
-                                return false;
-                            }
-                        } else {
-                            setNextTargetForEntity();
-                        }
+                        entityAttacks(entity);
                     } else {
                         clearInterval(interval);
                     }
 
                 }, entity.components.combat.weaponDelay);
             } else {
-                disengageEntityFromBattle;
+                disengageEntityFromBattle(entity);
+            }
+        }
+    }
+    function entityAttacks(entity) {
+        if (checkEntityTargetAliveStatus(entity)) {
+            if (checkEntityTargetVisibility(entity) && checkIfEntityCanReachTarget(entity) ) {
+                if (rollEntityAccuracy(entity)) {
+
+                    console.log(entity.components.lore.name + ' attacks ' + entity.components.combat.currentTarget.components.lore.name);
+                    entity.components.combat.currentTarget.components.status.hp -= rollEntityDamage(entity);
+                    console.log(entity.components.combat.currentTarget.components.lore.name + ' hp at ' + entity.components.combat.currentTarget.components.status.hp)
+
+                    if (entity.components.combat.currentTarget.components.status.hp > 0) {
+                        // do damage suff if target is alive
+
+                        if (!entity.components.combat.currentTarget.components.combat.inBattle) {
+                            // set current entity as the attacker for the attacked
+                            entity.components.combat.currentTarget.components.combat.currentAttacker = entity;
+                            // set current entity as the target for the attacked
+                            entity.components.combat.currentTarget.components.combat.currentTarget = entity;
+
+
+
+                            // stuff for NPC targets
+                            if (!entity.components.combat.currentTarget.components.playerControlled) {
+                                // interrupt attacked entity's idle behaviour
+                                if (entity.components.combat.currentTarget.components.idleBehaviour) {
+                                    entity.components.combat.currentTarget.components.idleBehaviour.isIdle = false;
+                                }
+
+                                // set attacked entity battle status to stop idle behaviour etc
+                                // counter attack
+                                engageEntityInBattle(entity.components.combat.currentTarget);
+                            }
+
+                        }
+                    } else {
+                        // do dying stuff on target if ded
+                        console.log(entity.components.combat.currentTarget.components.lore.name + ' ko\'d');
+                        entity.components.combat.currentTarget.components.status.isAlive = false;
+                        NPCs.splice(NPCs.indexOf(entity.components.combat.currentTarget), 1);
+                        entities.splice(entities.indexOf(entity.components.combat.currentTarget), 1);
+                        if (entity.components.combat.currentTarget.components.playerControlled) {
+                            entity.components.combat.currentTarget.removeComponent('playerControlled');
+                        }
+                    }
+
+                }
+
+                return true;
+            } else {
+                console.log(entity.components.lore.name + ' is not attacking');
+                return false;
+            }
+        } else {
+            if (entity.components.playerControlled) {
+                setNextTargetForEntity(entity);
+            } else {
+                entity.components.combat.isTargeted = false;
+                disengageEntityFromBattle(entity);
             }
         }
     }
@@ -421,15 +472,30 @@ function game(width, height) {
             entity.components.combat.currentTarget = null;
             console.log('deselected target');
         } else if (entity.components.combat.inBattle) {
-            disengageEntityFromBattle;
+            disengageEntityFromBattle(entity);
         } else {
             console.log('nothing to deselect');
+        }
+    }
+    function updateToFaceCurrentTarget(entity) {
+        if (entity.components.combat.currentTarget) {
+            if (entity.components.combat.currentTarget.components.position.xPos <= entity.components.position.xPos) {
+                entity.components.position.facingRight = false;
+            } else {
+                entity.components.position.facingRight = true;
+            }
+        }
+    }
+    function updateEntityAttackRange(entity) {
+        if (entity.components.position.facingRight) {
+            entity.components.combat.attackRange = entity.components.position.xPos + entity.components.appearance.width + entity.components.combat.weaponRange;
+        } else {
+            entity.components.combat.attackRange = entity.components.position.xPos - entity.components.combat.weaponRange;
         }
     }
     function moveEntityLeft(entity) {
         entity.components.position.movingLeft = true;
         entity.components.position.facingRight = false;
-        entity.components.combat.attackRange = entity.components.position.xPos - entity.components.combat.weaponRange;
 
         //NPC
         if (!entity.components.playerControlled) {
@@ -457,7 +523,7 @@ function game(width, height) {
     function moveEntityRight(entity) {
         entity.components.position.movingRight = true;
         entity.components.position.facingRight = true;
-        entity.components.combat.attackRange = entity.components.position.xPos + entity.components.appearance.width + entity.components.combat.weaponRange;
+
         //NPC
         if (!entity.components.playerControlled) {
             entity.components.position.xPos += entity.components.position.xVel;
@@ -533,7 +599,11 @@ function game(width, height) {
         }
 
         if (keysDown[engageButton]) {
-            engageEntityInBattle(entity);
+            if (!entity.components.combat.inBattle) {
+                engageEntityInBattle(entity);
+            } else {
+                disengageEntityFromBattle(entity);
+            }
         }
 
         if (keysDown[escButton]) {
@@ -586,8 +656,10 @@ function game(width, height) {
 
         // timer for how long to wait until next movement
         setTimeout(() => {
-
-            entity.components.idleBehaviour.isIdle = true;
+            // if battle has started while waiting stop the idle loop
+            if (!entity.components.combat.inBattle) {
+                entity.components.idleBehaviour.isIdle = true;
+            }
         }, entity.components.idleBehaviour.idlePauseDuration);
     }
     function NPCBehaviour(entity) {
@@ -596,6 +668,18 @@ function game(width, height) {
 
         // battle system functions
         //
+        if (entity.components.combat.currentAttacker) {
+            // start following player if engaged
+            if (entity.components.combat.currentAttacker.components.position.xPos - entity.components.combat.weaponRange >= entity.components.position.xPos + entity.components.appearance.width) {
+                entity.components.position.xPos += entity.components.position.xVel;
+                // crudely face right
+                entity.components.position.facingRight = true;
+            } else if (entity.components.combat.currentAttacker.components.position.xPos + entity.components.combat.currentAttacker.components.appearance.width + entity.components.combat.weaponRange <= entity.components.position.xPos) {
+                entity.components.position.xPos -= entity.components.position.xVel;
+                // crudely face left
+                entity.components.position.facingRight = false;
+            }
+        }
 
         if (entity.components.idleBehaviour.isIdle) {
             idleAnimation(entity);
@@ -605,35 +689,26 @@ function game(width, height) {
         updateBackground();
         updateFloor();
         entities.forEach((entity) =>{
-            gameArea.context.save();
-            gameArea.context.translate(entity.components.position.xPos, gameArea.canvas.height - entity.components.appearance.height - gameArea.canvas.floor);
-            gameArea.context.fillStyle = entity.components.appearance.color;
-            gameArea.context.fillRect(0, 0, entity.components.appearance.width, entity.components.appearance.height);
-            gameArea.context.restore();
+            // draw alive entities
+            if (entity.components.status.isAlive) {
+                gameArea.context.save();
+                gameArea.context.translate(entity.components.position.xPos, gameArea.canvas.height - entity.components.appearance.height - gameArea.canvas.floor);
+                gameArea.context.fillStyle = entity.components.appearance.color;
+                gameArea.context.fillRect(0, 0, entity.components.appearance.width, entity.components.appearance.height);
+                gameArea.context.restore();
+                // do stuff for NPCs
+                if (!entity.components.playerControlled) {
+                    if (entity.components.combat.isTargeted) {
+                        gameArea.context.save();
+                        gameArea.context.translate(entity.components.position.xPos + entity.components.appearance.width / 2 - 10, gameArea.canvas.height - gameArea.canvas.floor - entity.components.appearance.height - 30);
+                        gameArea.context.fillStyle = 'orange';
+                        gameArea.context.fillRect(0, 0, 20, 20);
+                        gameArea.context.restore();
+                    }
 
-            // do stuff for NPCs
-            if (!entity.components.playerControlled) {
-                if (entity.components.combat.isTargeted) {
-                    gameArea.context.save();
-                    gameArea.context.translate(entity.components.position.xPos + entity.components.appearance.width / 2 - 10, gameArea.canvas.height - gameArea.canvas.floor - entity.components.appearance.height - 30);
-                    gameArea.context.fillStyle = 'orange';
-                    gameArea.context.fillRect(0, 0, 20, 20);
-                    gameArea.context.restore();
-                }
-                if (entity.components.combat.currentAttacker) {
-                    // start following player if engaged
-                    if (entity.components.combat.currentAttacker.components.position.xPos - 20 >= entity.components.position.xPos + entity.components.appearance.width) {
-                        entity.components.position.xPos += entity.components.position.xVel;
-                        // crudely face right
-                        entity.components.position.facingRight = true;
-                    }
-                    if (entity.components.combat.currentAttacker.components.position.xPos + entity.components.combat.currentAttacker.components.appearance.width + 20 <= entity.components.position.xPos) {
-                        entity.components.position.xPos -= entity.components.position.xVel;
-                        // crudely face left
-                        entity.components.position.facingRight = false;
-                    }
                 }
             }
+
         });
     }
 
@@ -645,6 +720,10 @@ function game(width, height) {
         });
         NPCs.forEach((entity) =>{
             NPCBehaviour(entity);
+            updateToFaceCurrentTarget(entity)
+        });
+        entities.forEach((entity) =>{
+            updateEntityAttackRange(entity);
         });
         render();
 
