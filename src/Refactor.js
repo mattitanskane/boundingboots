@@ -134,6 +134,7 @@ components.status = {
         this.mp = 0;
         this.exp = 0;
         this.isAlive = true;
+        this.isDying = false;
         this.isPoisoned = false;
 
         return this;
@@ -170,7 +171,7 @@ components.combat = {
         this.currentAttacker = null;
         this.weaponRange = 50;
         this.attackRange = this.weaponRange;
-        this.weaponDelay = 2000;
+        this.weaponDelay = 300 + Math.random() * 2000;
         this.battleTransition = false;
         this.takingDamage = false;
         this.lastDamage = null;
@@ -349,7 +350,7 @@ function game(width, height) {
         }
     }
     function checkEntityTargetAliveStatus(entity) {
-        if (entity.components.combat.currentTarget.components.status.isAlive) {
+        if (entity.components.combat.currentTarget.components.status.isAlive && !entity.components.combat.currentTarget.components.status.isDying) {
             return true;
         } else {
             //logger.pushToMemory(attacker.name + ' attacks ' + attacker.currentTarget.name + '\'s corpse');
@@ -459,12 +460,27 @@ function game(width, height) {
                     } else {
                         // do dying stuff on target if ded
                         logger.pushToMemory(entity.components.combat.currentTarget.components.lore.name + ' ko\'d');
-                        entity.components.combat.currentTarget.components.status.isAlive = false;
-                        NPCs.splice(NPCs.indexOf(entity.components.combat.currentTarget), 1);
-                        entities.splice(entities.indexOf(entity.components.combat.currentTarget), 1);
-                        if (entity.components.combat.currentTarget.components.playerControlled) {
-                            entity.components.combat.currentTarget.removeComponent('playerControlled');
+                        if (entity.components.combat.currentTarget.components.lore.name === 'Leaping Lizard') {
+                            // TODO: entity drops items and treasure
+                            let dropRate = 0.02;
+                            let rng = Math.random();
+                            if (rng <= dropRate) {
+                                logger.pushToMemory('You find a pair of leaping boots on ' + entity.components.combat.currentTarget.components.lore.name);
+                                const leapingboots = {_name:'Leaping Boots'};
+                                entity.components.inventory.storage[leapingboots._name] = leapingboots;
+                            }
                         }
+
+                        entity.components.combat.currentTarget.components.status.isDying = true;
+                        setTimeout(() => {
+                            entity.components.combat.currentTarget.components.status.isDying = false;
+                            entity.components.combat.currentTarget.components.status.isAlive = false;
+                            NPCs.splice(NPCs.indexOf(entity.components.combat.currentTarget), 1);
+                            entities.splice(entities.indexOf(entity.components.combat.currentTarget), 1);
+                            if (entity.components.combat.currentTarget.components.playerControlled) {
+                                entity.components.combat.currentTarget.removeComponent('playerControlled');
+                            }
+                        }, 650);
                     }
 
                 } else {
@@ -589,7 +605,7 @@ function game(width, height) {
                 // iterate index
                 targetIndex++;
                 if (targetIndex >= NPCs.length) {
-                    //remove marker
+                    //remove target marker
                     NPCs.forEach(function(entity) {
                         entity.components.combat.isTargeted = false;
                     });
@@ -598,7 +614,7 @@ function game(width, height) {
                     entity.components.combat.currentTarget = NPCs[0];
                     NPCs[0].components.combat.isTargeted = true;
                 } else {
-                    //remove marker
+                    //remove target marker
                     NPCs.forEach(function(entity) {
                         entity.components.combat.isTargeted = false;
                     });
@@ -771,8 +787,8 @@ function game(width, height) {
                     gameArea.context.textAlign = 'center';
                     gameArea.context.fillText('???', entity.components.position.xPos + entity.components.appearance.width / 2, gameArea.canvas.height - gameArea.canvas.floor - entity.components.appearance.height - 20);
                 }
-                // show hp
                 if (entity.components.status) {
+                    // show hp health bar
                     gameArea.context.save();
                     gameArea.context.translate(entity.components.position.xPos, gameArea.canvas.height - gameArea.canvas.floor - entity.components.appearance.height - 13);
 
@@ -784,13 +800,16 @@ function game(width, height) {
                         gameArea.context.fillStyle = 'red';
                     }
 
-                    gameArea.context.fillRect(0, 0, entity.components.appearance.width / 100 * (entity.components.status.hp * 100 / entity.components.status.maxHP), 8);
+                    if (entity.components.status.hp >= 0) {
+                        gameArea.context.fillRect(0, 0, entity.components.appearance.width / 100 * (entity.components.status.hp * 100 / entity.components.status.maxHP), 8);
+                    }
                     gameArea.context.restore();
                 } else {
                     // dont show hp
                 }
-                // show damage indicator
+
                 if (entity.components.combat.takingDamage) {
+                    // show damage indicator
                     gameArea.context.save();
                     gameArea.context.translate(entity.components.position.xPos + entity.components.appearance.width / 2 - 20, gameArea.canvas.height - gameArea.canvas.floor - entity.components.appearance.height / 2 - 40);
 
@@ -816,14 +835,21 @@ function game(width, height) {
                     //nothing
                 }
 
+                if (entity.components.status.isDying) {
+                    // death frames
+                    entity.components.appearance.color = 'grey';
+                }
 
                 // do stuff for NPCs
                 if (!entity.components.playerControlled) {
                     if (entity.components.combat.isTargeted) {
+                        // target indicator
                         gameArea.context.save();
                         gameArea.context.translate(entity.components.position.xPos + entity.components.appearance.width / 2 - 10, gameArea.canvas.height - gameArea.canvas.floor - entity.components.appearance.height - 60);
+
                         gameArea.context.fillStyle = 'orange';
-                        gameArea.context.fillRect(0, 0, 20, 20);
+                        let indicatorShape = new Path2D('M10 29L0 0h20z');
+                        gameArea.context.fill(indicatorShape);
                         gameArea.context.restore();
                     }
 
