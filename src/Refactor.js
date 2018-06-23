@@ -130,6 +130,7 @@ components.status = {
     init() {
         this._name = 'status';
         this.hp = 10;
+        this.maxHP = 10;
         this.mp = 0;
         this.exp = 0;
         this.isAlive = true;
@@ -171,6 +172,9 @@ components.combat = {
         this.attackRange = this.weaponRange;
         this.weaponDelay = 2000;
         this.battleTransition = false;
+        this.takingDamage = false;
+        this.lastDamage = null;
+        this.evadingHit = false;
 
         return this;
     }
@@ -262,22 +266,20 @@ function game(width, height) {
             }
         },
         update() {
-            if (this.output.length == 3) {
-                console.log('pdskfpdokf')
-            }
             gameArea.context.save();
             gameArea.context.translate(10, 5);
             gameArea.context.fillStyle = 'rgba(66,66,66,0.92)';
-            gameArea.context.fillRect(0, 0, 400, 200);
+            gameArea.context.fillRect(0, 0, 450, 200);
             gameArea.context.restore();
 
             gameArea.context.font = this.font;
             gameArea.context.fillStyle = this.style;
+            gameArea.context.textAlign = 'left';
             for (let index = 0; index < this.output.length; index++) {
                 gameArea.context.fillText(this.output[index], 20, this.lineHeight * (index + 1));
             }
         }
-    }
+    };
     start();
     logger.pushToMemory('--- welcome to runescape ---');
     logger.update();
@@ -360,7 +362,6 @@ function game(width, height) {
         if (roll <= 70) {
             return true;
         } else {
-            logger.pushToMemory(entity.components.lore.name + ' missed ' + entity.components.combat.currentTarget.components.lore.name);
             return false;
         }
     }
@@ -414,9 +415,21 @@ function game(width, height) {
         if (checkEntityTargetAliveStatus(entity)) {
             if (checkEntityTargetVisibility(entity) && checkIfEntityCanReachTarget(entity) ) {
                 if (rollEntityAccuracy(entity)) {
+                    // hit and damage
 
                     logger.pushToMemory(entity.components.lore.name + ' attacks ' + entity.components.combat.currentTarget.components.lore.name);
-                    entity.components.combat.currentTarget.components.status.hp -= rollEntityDamage(entity);
+
+                    let damageTaken = rollEntityDamage(entity);
+
+                    entity.components.combat.currentTarget.components.status.hp -= damageTaken;
+                    entity.components.combat.currentTarget.components.combat.takingDamage = true;
+                    entity.components.combat.currentTarget.components.combat.lastDamage = damageTaken;
+                    setTimeout(() => {
+                        entity.components.combat.currentTarget.components.combat.takingDamage = false;
+                        entity.components.combat.currentTarget.components.combat.lastDamage = null;
+                    }, 650);
+
+
                     logger.pushToMemory(entity.components.combat.currentTarget.components.lore.name + ' hp at ' + entity.components.combat.currentTarget.components.status.hp)
 
                     if (entity.components.combat.currentTarget.components.status.hp > 0) {
@@ -454,6 +467,14 @@ function game(width, height) {
                         }
                     }
 
+                } else {
+                    // miss and evade
+                    logger.pushToMemory(entity.components.lore.name + ' missed ' + entity.components.combat.currentTarget.components.lore.name);
+
+                    entity.components.combat.currentTarget.components.combat.evadingHit = true;
+                    setTimeout(() => {
+                        entity.components.combat.currentTarget.components.combat.evadingHit = false;
+                    }, 650);
                 }
 
                 return true;
@@ -737,11 +758,70 @@ function game(width, height) {
                 gameArea.context.fillStyle = entity.components.appearance.color;
                 gameArea.context.fillRect(0, 0, entity.components.appearance.width, entity.components.appearance.height);
                 gameArea.context.restore();
+
+                // show name
+                if (entity.components.lore) {
+                    gameArea.context.font = '19px Helvetica, Arial, Sans-Serif';
+                    gameArea.context.fillStyle = '#fff';
+                    gameArea.context.textAlign = 'center';
+                    gameArea.context.fillText(entity.components.lore.name, entity.components.position.xPos + entity.components.appearance.width / 2, gameArea.canvas.height - gameArea.canvas.floor - entity.components.appearance.height - 20);
+                } else {
+                    gameArea.context.font = '19px Helvetica, Arial, Sans-Serif';
+                    gameArea.context.fillStyle = '#fff';
+                    gameArea.context.textAlign = 'center';
+                    gameArea.context.fillText('???', entity.components.position.xPos + entity.components.appearance.width / 2, gameArea.canvas.height - gameArea.canvas.floor - entity.components.appearance.height - 20);
+                }
+                // show hp
+                if (entity.components.status) {
+                    gameArea.context.save();
+                    gameArea.context.translate(entity.components.position.xPos, gameArea.canvas.height - gameArea.canvas.floor - entity.components.appearance.height - 13);
+
+                    if (entity.components.status.hp * 100 / entity.components.status.maxHP >= 60) {
+                        gameArea.context.fillStyle = 'green';
+                    } else if (entity.components.status.hp * 100 / entity.components.status.maxHP >= 20) {
+                        gameArea.context.fillStyle = 'orange';
+                    } else {
+                        gameArea.context.fillStyle = 'red';
+                    }
+
+                    gameArea.context.fillRect(0, 0, entity.components.appearance.width / 100 * (entity.components.status.hp * 100 / entity.components.status.maxHP), 8);
+                    gameArea.context.restore();
+                } else {
+                    // dont show hp
+                }
+                // show damage indicator
+                if (entity.components.combat.takingDamage) {
+                    gameArea.context.save();
+                    gameArea.context.translate(entity.components.position.xPos + entity.components.appearance.width / 2 - 20, gameArea.canvas.height - gameArea.canvas.floor - entity.components.appearance.height / 2 - 40);
+
+                    gameArea.context.fillStyle = 'red';
+                    let indicatorShape = new Path2D('M26.195 40l2.787-10.901L40 25.089l-7.697-9.757 3.03-12.676L23.387 7.67 13.044 0l-1.923 12.127L0 16.28l9.072 7.448L8.457 36.2l9.864-3.874z');
+                    gameArea.context.fill(indicatorShape);
+                    gameArea.context.restore();
+
+                    gameArea.context.font = '22px Helvetica, Arial, Sans-Serif';
+                    gameArea.context.fillStyle = '#fff';
+                    gameArea.context.textAlign = 'center';
+                    gameArea.context.fillText(entity.components.combat.lastDamage, entity.components.position.xPos + entity.components.appearance.width / 2, gameArea.canvas.height - gameArea.canvas.floor - entity.components.appearance.height / 2 - 12);
+
+
+                } else if (entity.components.combat.evadingHit) {
+                    gameArea.context.save();
+                    gameArea.context.translate(entity.components.position.xPos + entity.components.appearance.width / 2 - 30, gameArea.canvas.height - gameArea.canvas.floor - entity.components.appearance.height / 2 - 40);
+                    gameArea.context.fillStyle = 'white';
+                    let indicatorShape = new Path2D('M.11 19.344L3.462 5.54c1.9-1.333 3.568-1.924 5.003-1.774 2.076.219 5.11 1.819 5.634 4.07 1.563-2.042 4.423-3.013 6.557-2.788 1.371.144 3.05 4.572 2.898 6.02l-1.117 10.623-3.562.297 1.093-10.401c.187-1.772-.665-2.295-2.066-2.442-1.457-.153-1.406-.013-3.223 1.886l-1.093 10.401-4.183-1.111 1.76-10.108c.187-1.78-1.07-1.889-2.499-2.039-1.419-.149-1.13.007-2.967 1.913L3.323 20.353.11 19.343zm27.189 2.552l1.136-7.624-.47-5.865 4.306-.699c.336 7.626.13 12.508-.62 14.646-.749 2.137-2.2 1.984-4.352-.458zm1.053-16.034c-.364-1.691-.49-2.701-.377-3.03.112-.327.79-1.018 2.032-2.07l2.037 2.345-.254 2.412-3.438.343zm12.01 18.745c-1.286-.135-2.817-.599-4.592-1.392-.01-1.302.08-2.164.272-2.586.15-.332.572-.6 1.267-.806 1.742 1.108 6.376 1.335 6.445.677.068-.641-1.12-1.806-3.561-3.494-2.323-1.265-4.296-3.215-4.096-5.11.142-1.353 3.443-4.716 5.11-4.541.867.091 2.635.036 3.886.408l2.679 1.589-1.35 3.628c-1.522-.632-2.826-2.29-3.75-2.387-1.81-.19-1.855.47-1.993 1.784-.06.565.674 1.557 2.2 2.976 1.466.809 2.48 1.606 3.043 2.392.562.786 1.347 2.976 1.234 4.052-.143 1.362-5.118 2.987-6.795 2.81zm14.915 1.568c-1.285-.135-2.816-.6-4.591-1.393l.282-1.862c1.742 1.107 4.655-.075 5.234-.458.58-.382 1.905-2.23.476-3.016-3.447-1.656-5.104-3.116-4.971-4.38.142-1.352.949-3.6 1.988-4.275 1.039-.676 2.392-.926 4.058-.751.867.091 1.926.323 3.178.695l.573.176-.823 3.568c-1.522-.632-5.378-1.894-5.516-.58-.089.848 1.183 2.094 2.49 2.706l1.688 1.078c1.465.809 2.282 3.347 2.17 4.424-.144 1.362-.204 1.014-1.372 1.777-1.169.763-3.187 2.467-4.864 2.291z');
+                    gameArea.context.fill(indicatorShape);
+                    gameArea.context.restore();
+                } else {
+                    //nothing
+                }
+
+
                 // do stuff for NPCs
                 if (!entity.components.playerControlled) {
                     if (entity.components.combat.isTargeted) {
                         gameArea.context.save();
-                        gameArea.context.translate(entity.components.position.xPos + entity.components.appearance.width / 2 - 10, gameArea.canvas.height - gameArea.canvas.floor - entity.components.appearance.height - 30);
+                        gameArea.context.translate(entity.components.position.xPos + entity.components.appearance.width / 2 - 10, gameArea.canvas.height - gameArea.canvas.floor - entity.components.appearance.height - 60);
                         gameArea.context.fillStyle = 'orange';
                         gameArea.context.fillRect(0, 0, 20, 20);
                         gameArea.context.restore();
