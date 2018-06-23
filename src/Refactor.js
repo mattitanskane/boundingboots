@@ -192,6 +192,14 @@ components.idleBehaviour = {
         return this;
     }
 };
+components.inventory = {
+    init() {
+        this._name = 'inventory';
+        this.storage = {};
+
+        return this;
+    }
+};
 
 
 function game(width, height) {
@@ -215,6 +223,7 @@ function game(width, height) {
     const playerLore = Object.create(components.lore).init('Aslan');
     const playerStatus = Object.create(components.status).init();
     const playerCombat = Object.create(components.combat).init();
+    const playerInventory = Object.create(components.inventory).init();
 
     player.addComponent(playerControlled);
     player.addComponent(playerAppearance);
@@ -222,6 +231,7 @@ function game(width, height) {
     player.addComponent(playerLore);
     player.addComponent(playerStatus);
     player.addComponent(playerCombat);
+    player.addComponent(playerInventory);
 
     const NPCs = []; // for targeting
 
