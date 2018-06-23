@@ -234,7 +234,8 @@ function game(width, height) {
         NPCs.push(enemy);
     }
     spawnEnemy();
-    const enemySpawnInterval = 20000;
+    const enemySpawnInterval = 180000;
+
     setInterval(spawnEnemy, enemySpawnInterval);
 
     entities.push(player);
@@ -242,8 +243,44 @@ function game(width, height) {
     const PCs = []; // for targeting
     PCs.push(player);
 
-    start();
 
+
+
+
+    const logger = {
+        output: [],
+        history: [],
+        font: '22px Helvetica, Arial, Sans-Serif',
+        style: '#fff',
+        lineHeight: 24,
+        rowsToShow: 8,
+        pushToMemory(data) {
+            this.history.push(data);
+            this.output.push(data);
+            if (this.output.length > this.rowsToShow) {
+                this.output.splice(0, 1);
+            }
+        },
+        update() {
+            if (this.output.length == 3) {
+                console.log('pdskfpdokf')
+            }
+            gameArea.context.save();
+            gameArea.context.translate(10, 5);
+            gameArea.context.fillStyle = 'rgba(66,66,66,0.92)';
+            gameArea.context.fillRect(0, 0, 400, 200);
+            gameArea.context.restore();
+
+            gameArea.context.font = this.font;
+            gameArea.context.fillStyle = this.style;
+            for (let index = 0; index < this.output.length; index++) {
+                gameArea.context.fillText(this.output[index], 20, this.lineHeight * (index + 1));
+            }
+        }
+    }
+    start();
+    logger.pushToMemory('--- welcome to runescape ---');
+    logger.update();
 
     function start() {
         window.requestAnimationFrame(updateScreen);
@@ -254,44 +291,11 @@ function game(width, height) {
         gameArea.context.fillRect(0, 0, gameArea.canvas.width, gameArea.canvas.height);
     }
 
-    function updateFloor() {
-        gameArea.context.save();
 
-        gameArea.context.translate(0, gameArea.canvas.height - gameArea.canvas.floor);
-        gameArea.context.fillStyle = '#7dc383';
-        gameArea.context.fillRect(0, 0, gameArea.canvas.width, gameArea.canvas.floor * 0.5);
-
-        gameArea.context.translate(0, gameArea.canvas.floor * 0.5);
-        gameArea.context.fillStyle = '#6a9c78';
-        gameArea.context.fillRect(0, 0, gameArea.canvas.width, gameArea.canvas.floor * 0.3);
-
-        gameArea.context.translate(0, gameArea.canvas.floor * 0.3);
-        gameArea.context.fillStyle = '#446e5c';
-        gameArea.context.fillRect(0, 0, gameArea.canvas.width, gameArea.canvas.floor * 0.2);
-
-        gameArea.context.restore();
-    }
-    function updateBackground() {
-        if (!gameArea.canvas.bg) {
-            gameArea.canvas.bg = gameArea.context.createPattern(gameArea.bgImg, 'repeat');
-        }
-        gameArea.context.save();
-        gameArea.context.translate(gameArea.bgXPos, 0);
-        gameArea.context.fillStyle = gameArea.canvas.bg;
-        gameArea.context.fillRect(0, 0, gameArea.canvas.width, gameArea.canvas.height);
-        if (gameArea.bgXPos >= 0) {
-            // going left
-            gameArea.context.fillRect(gameArea.bgXPos - gameArea.canvas.width, 0, gameArea.canvas.width, gameArea.canvas.height);
-        } else if (gameArea.bgXPos + gameArea.canvas.width <= gameArea.canvas.width) {
-            // going right
-            gameArea.context.fillRect(gameArea.bgXPos + gameArea.canvas.width, 0, gameArea.canvas.width, gameArea.canvas.height);
-        }
-        gameArea.context.restore();
-    }
 
     function disengageEntityFromBattle(entity) {
         if (!entity.components.combat.battleTransition) {
-            console.log(entity.components.lore.name + ' disengaged');
+            logger.pushToMemory(entity.components.lore.name + ' disengaged');
             entity.components.combat.inBattle = false;
             // transition delay, prevents engage/disengage spam
             entity.components.combat.battleTransition = true;
@@ -302,12 +306,12 @@ function game(width, height) {
     }
     function setNextTargetForEntity(entity) {
         if (NPCs.length > 0) {
-            console.log('auto-targeting');
+            logger.pushToMemory('auto-targeting');
             entity.components.combat.currentTarget = NPCs[0];
             entity.components.combat.currentTarget.components.combat.isTargeted = true;
             return true;
         } else {
-            console.log('nothing to auto-target');
+            logger.pushToMemory('nothing to auto-target');
             entity.components.combat.currentTarget = null;
             disengageEntityFromBattle(entity);
             return false;
@@ -318,7 +322,7 @@ function game(width, height) {
         if (entity.components.combat.currentTarget) {
             return true;
         } else {
-            console.log('select a target');
+            logger.pushToMemory('select a target');
             return false;
         }
     }
@@ -328,7 +332,7 @@ function game(width, height) {
         } else if (!entity.components.position.facingRight && entity.components.position.xPos >= entity.components.combat.currentTarget.components.position.xPos) {
             return true;
         } else {
-            console.log(entity.components.lore.name + ' cannot see the target');
+            logger.pushToMemory(entity.components.lore.name + ' cannot see the target');
             return false;
         }
     }
@@ -338,7 +342,7 @@ function game(width, height) {
         } else if (!entity.components.position.facingRight && entity.components.combat.attackRange <= entity.components.combat.currentTarget.components.position.xPos + entity.components.combat.currentTarget.components.appearance.width) {
             return true;
         } else {
-            console.log(entity.components.lore.name + ' cannot reach the target');
+            logger.pushToMemory(entity.components.lore.name + ' cannot reach the target');
             return false;
         }
     }
@@ -346,7 +350,7 @@ function game(width, height) {
         if (entity.components.combat.currentTarget.components.status.isAlive) {
             return true;
         } else {
-            //console.log(attacker.name + ' attacks ' + attacker.currentTarget.name + '\'s corpse');
+            //logger.pushToMemory(attacker.name + ' attacks ' + attacker.currentTarget.name + '\'s corpse');
             return false;
         }
     }
@@ -356,7 +360,7 @@ function game(width, height) {
         if (roll <= 70) {
             return true;
         } else {
-            console.log(entity.components.lore.name + ' missed ' + entity.components.combat.currentTarget.components.lore.name);
+            logger.pushToMemory(entity.components.lore.name + ' missed ' + entity.components.combat.currentTarget.components.lore.name);
             return false;
         }
     }
@@ -368,7 +372,7 @@ function game(width, height) {
         let damage;
         // TODO: Add accuracy stat
         if (roll <= 10) {
-            console.log(entity.components.combat.currentTarget.components.lore.name + ' is struck with a critical hit!');
+            logger.pushToMemory(entity.components.combat.currentTarget.components.lore.name + ' is struck with a critical hit!');
             damage = basedmg * modifier;
             return damage;
         } else {
@@ -386,14 +390,15 @@ function game(width, height) {
             }, 1000);
 
             if (entity.components.combat.inBattle) {
-                console.log(entity.components.lore.name + ' engaged ' + entity.components.combat.currentTarget.components.lore.name);
+                logger.pushToMemory(entity.components.lore.name + ' engaged ' + entity.components.combat.currentTarget.components.lore.name);
 
                 // attack loop
                 const interval = setInterval(function() {
 
                     // stop loop if battle status changes
 
-                    if (entity.components.combat.inBattle) {
+                    // TODO: this is shit but isAlive makes sure the dead dont attack
+                    if (entity.components.combat.inBattle && entity.components.status.isAlive) {
                         entityAttacks(entity);
                     } else {
                         clearInterval(interval);
@@ -410,9 +415,9 @@ function game(width, height) {
             if (checkEntityTargetVisibility(entity) && checkIfEntityCanReachTarget(entity) ) {
                 if (rollEntityAccuracy(entity)) {
 
-                    console.log(entity.components.lore.name + ' attacks ' + entity.components.combat.currentTarget.components.lore.name);
+                    logger.pushToMemory(entity.components.lore.name + ' attacks ' + entity.components.combat.currentTarget.components.lore.name);
                     entity.components.combat.currentTarget.components.status.hp -= rollEntityDamage(entity);
-                    console.log(entity.components.combat.currentTarget.components.lore.name + ' hp at ' + entity.components.combat.currentTarget.components.status.hp)
+                    logger.pushToMemory(entity.components.combat.currentTarget.components.lore.name + ' hp at ' + entity.components.combat.currentTarget.components.status.hp)
 
                     if (entity.components.combat.currentTarget.components.status.hp > 0) {
                         // do damage suff if target is alive
@@ -440,7 +445,7 @@ function game(width, height) {
                         }
                     } else {
                         // do dying stuff on target if ded
-                        console.log(entity.components.combat.currentTarget.components.lore.name + ' ko\'d');
+                        logger.pushToMemory(entity.components.combat.currentTarget.components.lore.name + ' ko\'d');
                         entity.components.combat.currentTarget.components.status.isAlive = false;
                         NPCs.splice(NPCs.indexOf(entity.components.combat.currentTarget), 1);
                         entities.splice(entities.indexOf(entity.components.combat.currentTarget), 1);
@@ -453,7 +458,7 @@ function game(width, height) {
 
                 return true;
             } else {
-                console.log(entity.components.lore.name + ' is not attacking');
+                logger.pushToMemory(entity.components.lore.name + ' is not attacking');
                 return false;
             }
         } else {
@@ -470,11 +475,11 @@ function game(width, height) {
         if (entity.components.combat.currentTarget && !entity.components.combat.inBattle) {
             entity.components.combat.currentTarget.components.combat.isTargeted = false;
             entity.components.combat.currentTarget = null;
-            console.log('deselected target');
+            logger.pushToMemory('deselected target');
         } else if (entity.components.combat.inBattle) {
             disengageEntityFromBattle(entity);
         } else {
-            console.log('nothing to deselect');
+            logger.pushToMemory('nothing to deselect');
         }
     }
     function updateToFaceCurrentTarget(entity) {
@@ -581,10 +586,11 @@ function game(width, height) {
                     NPCs[targetIndex].components.combat.isTargeted = true;
                 }
             }
-            console.log('targeting ' + entity.components.combat.currentTarget.components.lore.name);
+
+            logger.pushToMemory('targeting ' + entity.components.combat.currentTarget.components.lore.name);
         // no targetable enemies
         } else {
-            console.log('no NPCs found');
+            logger.pushToMemory('no NPCs found');
         }
     }
     function playerInput(entity) {
@@ -685,9 +691,44 @@ function game(width, height) {
             idleAnimation(entity);
         }
     }
+    function updateFloor() {
+        gameArea.context.save();
+
+        gameArea.context.translate(0, gameArea.canvas.height - gameArea.canvas.floor);
+        gameArea.context.fillStyle = '#7dc383';
+        gameArea.context.fillRect(0, 0, gameArea.canvas.width, gameArea.canvas.floor * 0.5);
+
+        gameArea.context.translate(0, gameArea.canvas.floor * 0.5);
+        gameArea.context.fillStyle = '#6a9c78';
+        gameArea.context.fillRect(0, 0, gameArea.canvas.width, gameArea.canvas.floor * 0.3);
+
+        gameArea.context.translate(0, gameArea.canvas.floor * 0.3);
+        gameArea.context.fillStyle = '#446e5c';
+        gameArea.context.fillRect(0, 0, gameArea.canvas.width, gameArea.canvas.floor * 0.2);
+
+        gameArea.context.restore();
+    }
+    function updateBackground() {
+        if (!gameArea.canvas.bg) {
+            gameArea.canvas.bg = gameArea.context.createPattern(gameArea.bgImg, 'repeat');
+        }
+        gameArea.context.save();
+        gameArea.context.translate(gameArea.bgXPos, 0);
+        gameArea.context.fillStyle = gameArea.canvas.bg;
+        gameArea.context.fillRect(0, 0, gameArea.canvas.width, gameArea.canvas.height);
+        if (gameArea.bgXPos >= 0) {
+            // going left
+            gameArea.context.fillRect(gameArea.bgXPos - gameArea.canvas.width, 0, gameArea.canvas.width, gameArea.canvas.height);
+        } else if (gameArea.bgXPos + gameArea.canvas.width <= gameArea.canvas.width) {
+            // going right
+            gameArea.context.fillRect(gameArea.bgXPos + gameArea.canvas.width, 0, gameArea.canvas.width, gameArea.canvas.height);
+        }
+        gameArea.context.restore();
+    }
     function render() {
         updateBackground();
         updateFloor();
+
         entities.forEach((entity) =>{
             // draw alive entities
             if (entity.components.status.isAlive) {
@@ -710,7 +751,10 @@ function game(width, height) {
             }
 
         });
+
+        logger.update();
     }
+
 
     function updateScreen() {
         clear();
