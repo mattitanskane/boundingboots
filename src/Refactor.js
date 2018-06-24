@@ -855,10 +855,10 @@ function game(width, height) {
                     if (entity.components.combat.isTargeted) {
                         // target indicator
                         gameArea.context.save();
-                        gameArea.context.translate(entity.components.position.xPos + entity.components.appearance.width / 2 - 10, gameArea.canvas.height - gameArea.canvas.floor - entity.components.appearance.height - 60);
+                        gameArea.context.translate(entity.components.position.xPos + entity.components.appearance.width / 2 - 7, gameArea.canvas.height - gameArea.canvas.floor - entity.components.appearance.height - 60);
 
                         gameArea.context.fillStyle = 'orange';
-                        let indicatorShape = new Path2D('M10 29L0 0h20z');
+                        let indicatorShape = new Path2D('M0,4 L7,0 L14,4 L7,20 L0,4 Z');
                         gameArea.context.fill(indicatorShape);
                         gameArea.context.restore();
                     }
