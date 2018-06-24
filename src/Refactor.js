@@ -83,18 +83,110 @@ components.appearance = {
             this.color = color;
         }
 
+        this.animated = true;
+        this.skeleton = {
+            lefthand: {
+                speed: 0.3,
+                x: 40,
+                xMax: 40,
+                xMin: 40,
+                y: 30,
+                yMax: 30,
+                yMin: 30,
+                rotation: 0,
+                rotationMax: -4,
+                rotationMin: 2,
+                direction: 0,
+                path: new Path2D('M33.335 31.132l-23.09 15.88L-.04 36.522l15.01-12.02L-.04 5.834 13.75.808z'),
+                img: null
+            },
+            leftleg: {
+                speed: 0.6,
+                x: 25,
+                xMax: 40,
+                xMin: 40,
+                y: 88,
+                yMax: 88,
+                yMin: 88,
+                rotation: 0,
+                rotationMax: -8,
+                rotationMin: 6,
+                direction: 0,
+                path: new Path2D('M7.037 25.952L.943 9.18 20.413.145l5.265 30.929-1.372 30.929H8.61z'),
+                img: null
+            },
+            head: {
+                speed: 0.1,
+                x: 5,
+                xMax: 40,
+                xMin: 40,
+                y: 0,
+                yMax: 2,
+                yMin: -1,
+                rotation: 0,
+                rotationMax: -44,
+                rotationMin: 40,
+                direction: 0,
+                path: new Path2D('M0 .155h33.254l-5.03 14.57L31.864 33 9.725 31.163 0 16.577z'),
+                img: null
+            },
+            torso: {
+                speed: 0.2,
+                x: 0,
+                xMax: 0,
+                xMin: 0,
+                y: 37,
+                yMax: 39,
+                yMin: 36,
+                rotation: 0,
+                rotationMax: -44,
+                rotationMin: 40,
+                direction: 0,
+                path: new Path2D('M0 0h43l-2.69 36.208L43 48H0l3.883-14.632z'),
+                img: null
+            },
+            righthand: {
+                speed: 0.3,
+                x: 25,
+                y: 30,
+                yMax: 30,
+                yMin: 30,
+                rotation: 0,
+                rotationMax: -6,
+                rotationMin: 4,
+                direction: 0,
+                path: new Path2D('M0 20.553L17.762 0l11.77 8.222-11.77 19.674-3.148 22.938H3.422z'),
+                img: null
+            },
+            rightleg: {
+                speed: 0.6,
+                x: -8,
+                xMax: 40,
+                xMin: 40,
+                y: 88,
+                yMax: 88,
+                yMin: 88,
+                rotation: 0,
+                rotationMax: -8,
+                rotationMin: 6,
+                direction: 0,
+                path: new Path2D('M2.037 25.952L5.981 0l20.257 10.43-6.932 22.132-2.353 29.441H0z'),
+                img: null
+            }
+        };
+
         return this;
     }
 };
 components.position = {
-    init(xPos, yPos, xVel) {
+    init(x, y, velocity) {
         this._name = 'position';
 
-        const randomXPosition = Math.floor(1280 * Math.random());
+        const randomxition = Math.floor(1280 * Math.random());
 
-        this.xPos = xPos || randomXPosition;
-        this.yPos = yPos || 0;
-        this.xVel = xVel || 1;
+        this.x = x || randomxition;
+        this.y = y || 0;
+        this.velocity = velocity || 1;
         this.facingRight = true;
         this.movingRight = false;
         this.movingLeft = false;
@@ -213,14 +305,14 @@ function game(width, height) {
 
     gameArea.bgImg = new Image(gameArea.canvas.width, gameArea.canvas.height);
     gameArea.bgImg.src = 'https://i.ytimg.com/vi/HzrhHFxTY8Y/maxresdefault.jpg';
-    gameArea.bgXPos = 0;
+    gameArea.bgx = 0;
 
     const player = Object.create(entity).init();
 
     const playerControlled = Object.create(components.playerControlled).init();
-    const playerAppearance = Object.create(components.appearance).init(90, 200, 'tomato');
-    const playerPosition = Object.create(components.position).init(50, 0, 2.5);
-    const playerLore = Object.create(components.lore).init('Aslan');
+    const playerAppearance = Object.create(components.appearance).init(109, 150, 'tomato');
+    const playerPosition = Object.create(components.position).init(50, 0, 2.1);
+    const playerLore = Object.create(components.lore).init('Daddy');
     const playerStatus = Object.create(components.status).init();
     const playerCombat = Object.create(components.combat).init();
     const playerInventory = Object.create(components.inventory).init();
@@ -257,10 +349,6 @@ function game(width, height) {
 
     const PCs = []; // for targeting
     PCs.push(player);
-
-
-
-
 
     const logger = {
         output: [],
@@ -340,9 +428,9 @@ function game(width, height) {
         }
     }
     function checkEntityTargetVisibility(entity) {
-        if (entity.components.position.facingRight && entity.components.position.xPos + entity.components.appearance.width <= entity.components.combat.currentTarget.components.position.xPos + entity.components.combat.currentTarget.components.appearance.width) {
+        if (entity.components.position.facingRight && entity.components.position.x + entity.components.appearance.width <= entity.components.combat.currentTarget.components.position.x + entity.components.combat.currentTarget.components.appearance.width) {
             return true;
-        } else if (!entity.components.position.facingRight && entity.components.position.xPos >= entity.components.combat.currentTarget.components.position.xPos) {
+        } else if (!entity.components.position.facingRight && entity.components.position.x >= entity.components.combat.currentTarget.components.position.x) {
             return true;
         } else {
             logger.pushToMemory(entity.components.lore.name + ' cannot see the target');
@@ -350,9 +438,9 @@ function game(width, height) {
         }
     }
     function checkIfEntityCanReachTarget(entity) {
-        if (entity.components.position.facingRight && entity.components.combat.attackRange >= entity.components.combat.currentTarget.components.position.xPos) {
+        if (entity.components.position.facingRight && entity.components.combat.attackRange >= entity.components.combat.currentTarget.components.position.x) {
             return true;
-        } else if (!entity.components.position.facingRight && entity.components.combat.attackRange <= entity.components.combat.currentTarget.components.position.xPos + entity.components.combat.currentTarget.components.appearance.width) {
+        } else if (!entity.components.position.facingRight && entity.components.combat.attackRange <= entity.components.combat.currentTarget.components.position.x + entity.components.combat.currentTarget.components.appearance.width) {
             return true;
         } else {
             logger.pushToMemory(entity.components.lore.name + ' cannot reach the target');
@@ -441,7 +529,7 @@ function game(width, height) {
                     }, 650);
 
 
-                    logger.pushToMemory(entity.components.combat.currentTarget.components.lore.name + ' hp at ' + entity.components.combat.currentTarget.components.status.hp)
+                    logger.pushToMemory(entity.components.combat.currentTarget.components.lore.name + ' hp at ' + entity.components.combat.currentTarget.components.status.hp);
 
                     if (entity.components.combat.currentTarget.components.status.hp > 0) {
                         // do damage suff if target is alive
@@ -531,7 +619,7 @@ function game(width, height) {
     }
     function updateToFaceCurrentTarget(entity) {
         if (entity.components.combat.currentTarget) {
-            if (entity.components.combat.currentTarget.components.position.xPos <= entity.components.position.xPos) {
+            if (entity.components.combat.currentTarget.components.position.x <= entity.components.position.x) {
                 entity.components.position.facingRight = false;
             } else {
                 entity.components.position.facingRight = true;
@@ -540,9 +628,9 @@ function game(width, height) {
     }
     function updateEntityAttackRange(entity) {
         if (entity.components.position.facingRight) {
-            entity.components.combat.attackRange = entity.components.position.xPos + entity.components.appearance.width + entity.components.combat.weaponRange;
+            entity.components.combat.attackRange = entity.components.position.x + entity.components.appearance.width + entity.components.combat.weaponRange;
         } else {
-            entity.components.combat.attackRange = entity.components.position.xPos - entity.components.combat.weaponRange;
+            entity.components.combat.attackRange = entity.components.position.x - entity.components.combat.weaponRange;
         }
     }
     function moveEntityLeft(entity) {
@@ -551,26 +639,26 @@ function game(width, height) {
 
         //NPC
         if (!entity.components.playerControlled) {
-            entity.components.position.xPos -= entity.components.position.xVel;
+            entity.components.position.x -= entity.components.position.velocity;
         }
         //PC
         if (entity.components.playerControlled) {
-            if (entity.components.position.xPos <= 0) {
+            if (entity.components.position.x <= 0) {
                 // prevent overflow leftside
-                entity.components.position.xPos = entity.components.position.xPos;
+                entity.components.position.x = entity.components.position.x;
             } else {
                 // parallax bg and move NPCs related to player movement
-                gameArea.bgXPos += entity.components.position.xVel / 1.2;
+                gameArea.bgx += entity.components.position.velocity / 1.2;
                 NPCs.forEach(NPC => {
-                    NPC.components.position.xPos += entity.components.position.xVel / 2;
+                    NPC.components.position.x += entity.components.position.velocity / 2;
                 });
-                entity.components.position.xPos -= entity.components.position.xVel;
+                entity.components.position.x -= entity.components.position.velocity;
             }
         }
     }
     function stopEntityFromMovingLeft(entity) {
         entity.components.position.movingLeft = false;
-        entity.components.position.xPos = entity.components.position.xPos;
+        entity.components.position.x = entity.components.position.x;
     }
     function moveEntityRight(entity) {
         entity.components.position.movingRight = true;
@@ -578,26 +666,26 @@ function game(width, height) {
 
         //NPC
         if (!entity.components.playerControlled) {
-            entity.components.position.xPos += entity.components.position.xVel;
+            entity.components.position.x += entity.components.position.velocity;
         }
         //PC
         if (entity.components.playerControlled) {
-            if (entity.components.position.xPos + entity.components.appearance.width >= gameArea.canvas.width) {
+            if (entity.components.position.x + entity.components.appearance.width >= gameArea.canvas.width) {
                 // prevent overflow rightside
-                entity.components.position.xPos = entity.components.position.xPos;
+                entity.components.position.x = entity.components.position.x;
             } else {
                 // parallax bg and move NPCs related to player movement
-                gameArea.bgXPos -= entity.components.position.xVel / 1.2;
+                gameArea.bgx -= entity.components.position.velocity / 1.2;
                 NPCs.forEach(NPC => {
-                    NPC.components.position.xPos -= entity.components.position.xVel / 2;
+                    NPC.components.position.x -= entity.components.position.velocity / 2;
                 });
-                entity.components.position.xPos += entity.components.position.xVel;
+                entity.components.position.x += entity.components.position.velocity;
             }
         }
     }
     function stopEntityFromMovingRight(entity) {
         entity.components.position.movingRight = false;
-        entity.components.position.xPos = entity.components.position.xPos;
+        entity.components.position.x = entity.components.position.x;
     }
     function setTargetForEntity(entity) {
         delete keysDown[cycleTarget];
@@ -696,7 +784,6 @@ function game(width, height) {
         } else if (entity.components.idleBehaviour.idleDirection === 'right') {
             moveEntityRight(entity);
         } else if (entity.components.idleBehaviour.idleDirection === 'none') {
-            // dont move
         }
 
         // timer for how long should move
@@ -704,6 +791,8 @@ function game(width, height) {
             entity.components.idleBehaviour.isIdle = false;
             if (entity.components.idleBehaviour.idleDirection) {
                 entity.components.idleBehaviour.idleDirection = null;
+                stopEntityFromMovingLeft(entity);
+                stopEntityFromMovingRight(entity);
             }
         }, entity.components.idleBehaviour.idleAnimationDuration);
 
@@ -723,12 +812,12 @@ function game(width, height) {
         //
         if (entity.components.combat.currentAttacker) {
             // start following player if engaged
-            if (entity.components.combat.currentAttacker.components.position.xPos - entity.components.combat.weaponRange >= entity.components.position.xPos + entity.components.appearance.width) {
-                entity.components.position.xPos += entity.components.position.xVel;
+            if (entity.components.combat.currentAttacker.components.position.x - entity.components.combat.weaponRange >= entity.components.position.x + entity.components.appearance.width) {
+                entity.components.position.x += entity.components.position.velocity;
                 // crudely face right
                 entity.components.position.facingRight = true;
-            } else if (entity.components.combat.currentAttacker.components.position.xPos + entity.components.combat.currentAttacker.components.appearance.width + entity.components.combat.weaponRange <= entity.components.position.xPos) {
-                entity.components.position.xPos -= entity.components.position.xVel;
+            } else if (entity.components.combat.currentAttacker.components.position.x + entity.components.combat.currentAttacker.components.appearance.width + entity.components.combat.weaponRange <= entity.components.position.x) {
+                entity.components.position.x -= entity.components.position.velocity;
                 // crudely face left
                 entity.components.position.facingRight = false;
             }
@@ -760,15 +849,15 @@ function game(width, height) {
             gameArea.canvas.bg = gameArea.context.createPattern(gameArea.bgImg, 'repeat');
         }
         gameArea.context.save();
-        gameArea.context.translate(gameArea.bgXPos, 0);
+        gameArea.context.translate(gameArea.bgx, 0);
         gameArea.context.fillStyle = gameArea.canvas.bg;
         gameArea.context.fillRect(0, 0, gameArea.canvas.width, gameArea.canvas.height);
-        if (gameArea.bgXPos >= 0) {
+        if (gameArea.bgx >= 0) {
             // going left
-            gameArea.context.fillRect(gameArea.bgXPos - gameArea.canvas.width, 0, gameArea.canvas.width, gameArea.canvas.height);
-        } else if (gameArea.bgXPos + gameArea.canvas.width <= gameArea.canvas.width) {
+            gameArea.context.fillRect(gameArea.bgx - gameArea.canvas.width, 0, gameArea.canvas.width, gameArea.canvas.height);
+        } else if (gameArea.bgx + gameArea.canvas.width <= gameArea.canvas.width) {
             // going right
-            gameArea.context.fillRect(gameArea.bgXPos + gameArea.canvas.width, 0, gameArea.canvas.width, gameArea.canvas.height);
+            gameArea.context.fillRect(gameArea.bgx + gameArea.canvas.width, 0, gameArea.canvas.width, gameArea.canvas.height);
         }
         gameArea.context.restore();
     }
@@ -779,28 +868,242 @@ function game(width, height) {
         entities.forEach((entity) =>{
             // draw alive entities
             if (entity.components.status.isAlive) {
-                gameArea.context.save();
-                gameArea.context.translate(entity.components.position.xPos, gameArea.canvas.height - entity.components.appearance.height - gameArea.canvas.floor);
-                gameArea.context.fillStyle = entity.components.appearance.color;
-                gameArea.context.fillRect(0, 0, entity.components.appearance.width, entity.components.appearance.height);
-                gameArea.context.restore();
+                if (entity.components.appearance.animated) {
+
+
+
+
+
+                    if (entity.components.position.movingRight || entity.components.position.movingLeft) {
+
+                        // left hand
+                        if (entity.components.appearance.skeleton.lefthand.direction === 0) {
+                            entity.components.appearance.skeleton.lefthand.direction = 1;
+                        }
+                        if (entity.components.appearance.skeleton.lefthand.direction === 1) {
+                            entity.components.appearance.skeleton.lefthand.rotation -= entity.components.appearance.skeleton.lefthand.speed;
+                            if (entity.components.appearance.skeleton.lefthand.rotation <= entity.components.appearance.skeleton.lefthand.rotationMax) {
+                                entity.components.appearance.skeleton.lefthand.direction = -1;
+                            }
+                        } else if (entity.components.appearance.skeleton.lefthand.direction === -1) {
+                            entity.components.appearance.skeleton.lefthand.rotation += entity.components.appearance.skeleton.lefthand.speed;
+                            if (entity.components.appearance.skeleton.lefthand.rotation >= entity.components.appearance.skeleton.lefthand.rotationMin) {
+                                entity.components.appearance.skeleton.lefthand.direction = 1;
+                            }
+                        }
+                        gameArea.context.save();
+                        gameArea.context.fillStyle = entity.components.appearance.color;
+                        gameArea.context.translate(entity.components.position.x + entity.components.appearance.skeleton.lefthand.x, gameArea.canvas.height - entity.components.appearance.height + entity.components.appearance.skeleton.lefthand.y - gameArea.canvas.floor);
+                        gameArea.context.rotate(entity.components.appearance.skeleton.lefthand.rotation * Math.PI / 180);
+                        if (entity.components.appearance.skeleton.lefthand.path) {
+                            gameArea.context.fill(entity.components.appearance.skeleton.lefthand.path);
+                        } else if (entity.components.appearance.skeleton.lefthand.img) {
+                            // TODO: Figure out how to use images
+                        }
+                        gameArea.context.restore();
+                        // left leg
+                        if (entity.components.appearance.skeleton.leftleg.direction === 0) {
+                            entity.components.appearance.skeleton.leftleg.direction = 1;
+                        }
+                        if (entity.components.appearance.skeleton.leftleg.direction === 1) {
+                            entity.components.appearance.skeleton.leftleg.rotation -= entity.components.appearance.skeleton.leftleg.speed;
+                            if (entity.components.appearance.skeleton.leftleg.rotation <= entity.components.appearance.skeleton.leftleg.rotationMax) {
+                                entity.components.appearance.skeleton.leftleg.direction = -1;
+                            }
+                        } else if (entity.components.appearance.skeleton.leftleg.direction === -1) {
+                            entity.components.appearance.skeleton.leftleg.rotation += entity.components.appearance.skeleton.leftleg.speed;
+                            if (entity.components.appearance.skeleton.leftleg.rotation >= entity.components.appearance.skeleton.leftleg.rotationMin) {
+                                entity.components.appearance.skeleton.leftleg.direction = 1;
+                            }
+                        }
+                        gameArea.context.save();
+                        gameArea.context.fillStyle = entity.components.appearance.color;
+                        gameArea.context.translate(entity.components.position.x + entity.components.appearance.skeleton.leftleg.x, gameArea.canvas.height - entity.components.appearance.height + entity.components.appearance.skeleton.leftleg.y - gameArea.canvas.floor);
+                        gameArea.context.rotate(entity.components.appearance.skeleton.leftleg.rotation * Math.PI / 180);
+                        if (entity.components.appearance.skeleton.leftleg.path) {
+                            gameArea.context.fill(entity.components.appearance.skeleton.leftleg.path);
+                        } else if (entity.components.appearance.skeleton.leftleg.img) {
+                            // TODO: Figure out how to use images
+                        }
+                        gameArea.context.restore();
+
+                        // head
+                        if (entity.components.appearance.skeleton.head.direction === 0) {
+                            entity.components.appearance.skeleton.head.direction = 1;
+                        }
+                        if (entity.components.appearance.skeleton.head.direction === 1) {
+                            entity.components.appearance.skeleton.head.y -= entity.components.appearance.skeleton.head.speed;
+                            if (entity.components.appearance.skeleton.head.y <= entity.components.appearance.skeleton.head.yMin) {
+                                entity.components.appearance.skeleton.head.direction = -1;
+                            }
+                        } else if (entity.components.appearance.skeleton.head.direction === -1) {
+                            entity.components.appearance.skeleton.head.y += entity.components.appearance.skeleton.head.speed;
+                            if (entity.components.appearance.skeleton.head.y >= entity.components.appearance.skeleton.head.yMax) {
+                                entity.components.appearance.skeleton.head.direction = 1;
+                            }
+                        }
+                        gameArea.context.save();
+                        gameArea.context.fillStyle = entity.components.appearance.color;
+                        gameArea.context.translate(entity.components.position.x + entity.components.appearance.skeleton.head.x, gameArea.canvas.height - entity.components.appearance.height + entity.components.appearance.skeleton.head.y - gameArea.canvas.floor);
+                        gameArea.context.rotate(entity.components.appearance.skeleton.head.rotation * Math.PI / 180);
+                        if (entity.components.appearance.skeleton.head.path) {
+                            gameArea.context.fill(entity.components.appearance.skeleton.head.path);
+                        } else if (entity.components.appearance.skeleton.head.img) {
+                            // TODO: Figure out how to use images
+                        }
+                        gameArea.context.restore();
+                        // torso
+                        if (entity.components.appearance.skeleton.torso.direction === 0) {
+                            entity.components.appearance.skeleton.torso.direction = 1;
+                        }
+                        if (entity.components.appearance.skeleton.torso.direction === 1) {
+                            entity.components.appearance.skeleton.torso.y -= entity.components.appearance.skeleton.torso.speed;
+                            if (entity.components.appearance.skeleton.torso.y <= entity.components.appearance.skeleton.torso.yMin) {
+                                entity.components.appearance.skeleton.torso.direction = -1;
+                            }
+                        } else if (entity.components.appearance.skeleton.torso.direction === -1) {
+                            entity.components.appearance.skeleton.torso.y += entity.components.appearance.skeleton.torso.speed;
+                            if (entity.components.appearance.skeleton.torso.y >= entity.components.appearance.skeleton.torso.yMax) {
+                                entity.components.appearance.skeleton.torso.direction = 1;
+                            }
+                        }
+                        gameArea.context.save();
+                        gameArea.context.fillStyle = entity.components.appearance.color;
+                        gameArea.context.translate(entity.components.position.x + entity.components.appearance.skeleton.torso.x, gameArea.canvas.height - entity.components.appearance.height + entity.components.appearance.skeleton.torso.y - gameArea.canvas.floor);
+                        gameArea.context.rotate(entity.components.appearance.skeleton.torso.rotation * Math.PI / 180);
+                        if (entity.components.appearance.skeleton.torso.path) {
+                            gameArea.context.fill(entity.components.appearance.skeleton.torso.path);
+                        } else if (entity.components.appearance.skeleton.torso.img) {
+                            // TODO: Figure out how to use images
+                        }
+                        gameArea.context.restore();
+
+                        // right hand
+                        if (entity.components.appearance.skeleton.righthand.direction === 0) {
+                            entity.components.appearance.skeleton.righthand.direction = -1;
+                        }
+                        if (entity.components.appearance.skeleton.righthand.direction === 1) {
+                            entity.components.appearance.skeleton.righthand.rotation -= entity.components.appearance.skeleton.righthand.speed;
+                            if (entity.components.appearance.skeleton.righthand.rotation <= entity.components.appearance.skeleton.righthand.rotationMax) {
+                                entity.components.appearance.skeleton.righthand.direction = -1;
+                            }
+                        } else if (entity.components.appearance.skeleton.righthand.direction === -1) {
+                            entity.components.appearance.skeleton.righthand.rotation += entity.components.appearance.skeleton.righthand.speed;
+                            if (entity.components.appearance.skeleton.righthand.rotation >= entity.components.appearance.skeleton.righthand.rotationMin) {
+                                entity.components.appearance.skeleton.righthand.direction = 1;
+                            }
+                        }
+                        gameArea.context.save();
+                        gameArea.context.fillStyle = entity.components.appearance.color;
+                        gameArea.context.translate(entity.components.position.x - entity.components.appearance.skeleton.righthand.x, gameArea.canvas.height - entity.components.appearance.height + entity.components.appearance.skeleton.righthand.y - gameArea.canvas.floor);
+                        gameArea.context.rotate(entity.components.appearance.skeleton.righthand.rotation * Math.PI / 180);
+                        if (entity.components.appearance.skeleton.righthand.path) {
+                            gameArea.context.fill(entity.components.appearance.skeleton.righthand.path);
+                        } else if (entity.components.appearance.skeleton.righthand.img) {
+                            // TODO: Figure out how to use images
+                        }
+                        gameArea.context.restore();
+                        // right leg
+                        if (entity.components.appearance.skeleton.rightleg.direction === 0) {
+                            entity.components.appearance.skeleton.rightleg.direction = -1;
+                        }
+                        if (entity.components.appearance.skeleton.rightleg.direction === 1) {
+                            entity.components.appearance.skeleton.rightleg.rotation -= entity.components.appearance.skeleton.rightleg.speed;
+                            if (entity.components.appearance.skeleton.rightleg.rotation <= entity.components.appearance.skeleton.rightleg.rotationMax) {
+                                entity.components.appearance.skeleton.rightleg.direction = -1;
+                            }
+                        } else if (entity.components.appearance.skeleton.rightleg.direction === -1) {
+                            entity.components.appearance.skeleton.rightleg.rotation += entity.components.appearance.skeleton.rightleg.speed;
+                            if (entity.components.appearance.skeleton.rightleg.rotation >= entity.components.appearance.skeleton.rightleg.rotationMin) {
+                                entity.components.appearance.skeleton.rightleg.direction = 1;
+                            }
+                        }
+                        gameArea.context.save();
+                        gameArea.context.fillStyle = entity.components.appearance.color;
+                        gameArea.context.translate(entity.components.position.x + entity.components.appearance.skeleton.rightleg.x, gameArea.canvas.height - entity.components.appearance.height + entity.components.appearance.skeleton.rightleg.y - gameArea.canvas.floor);
+                        gameArea.context.rotate(entity.components.appearance.skeleton.rightleg.rotation * Math.PI / 180);
+                        if (entity.components.appearance.skeleton.rightleg.path) {
+                            gameArea.context.fill(entity.components.appearance.skeleton.rightleg.path);
+                        } else if (entity.components.appearance.skeleton.rightleg.img) {
+                            // TODO: Figure out how to use images
+                        }
+                        gameArea.context.restore();
+
+                    } else {
+                        // not moving.... TODO: needs idle animation
+                        entity.components.appearance.skeleton.leftleg.direction = 0;
+                        entity.components.appearance.skeleton.lefthand.direction = 0;
+                        entity.components.appearance.skeleton.head.direction = 0;
+                        entity.components.appearance.skeleton.torso.direction = 0;
+                        entity.components.appearance.skeleton.rightleg.direction = 0;
+                        entity.components.appearance.skeleton.righthand.direction = 0;
+
+                        // left hand
+                        gameArea.context.save();
+                        gameArea.context.fillStyle = entity.components.appearance.color;
+                        gameArea.context.translate(entity.components.position.x + entity.components.appearance.skeleton.lefthand.x, gameArea.canvas.height - entity.components.appearance.height + entity.components.appearance.skeleton.lefthand.y - gameArea.canvas.floor);
+                        gameArea.context.fill(entity.components.appearance.skeleton.lefthand.path);
+                        gameArea.context.restore();
+                        // leftleg
+                        gameArea.context.save();
+                        gameArea.context.fillStyle = entity.components.appearance.color;
+                        gameArea.context.translate(entity.components.position.x + entity.components.appearance.skeleton.leftleg.x, gameArea.canvas.height - entity.components.appearance.height + 88 - gameArea.canvas.floor);
+                        gameArea.context.fill(entity.components.appearance.skeleton.leftleg.path);
+                        gameArea.context.restore();
+
+                        // torso
+                        gameArea.context.save();
+                        gameArea.context.fillStyle = entity.components.appearance.color;
+                        gameArea.context.translate(entity.components.position.x, gameArea.canvas.height - entity.components.appearance.height + entity.components.appearance.skeleton.torso.y - gameArea.canvas.floor);
+                        gameArea.context.fill(entity.components.appearance.skeleton.torso.path);
+                        gameArea.context.restore();
+                        // head
+                        gameArea.context.save();
+                        gameArea.context.fillStyle = entity.components.appearance.color;
+                        gameArea.context.translate(entity.components.position.x + entity.components.appearance.skeleton.head.x, gameArea.canvas.height - entity.components.appearance.height - gameArea.canvas.floor);
+                        gameArea.context.fill(entity.components.appearance.skeleton.head.path);
+                        gameArea.context.restore();
+                        // right hand
+                        gameArea.context.save();
+                        gameArea.context.fillStyle = entity.components.appearance.color;
+                        gameArea.context.translate(entity.components.position.x - entity.components.appearance.skeleton.righthand.x, gameArea.canvas.height - entity.components.appearance.height + entity.components.appearance.skeleton.righthand.y - gameArea.canvas.floor);
+                        gameArea.context.fill(entity.components.appearance.skeleton.righthand.path);
+                        gameArea.context.restore();
+                        // right leg
+                        gameArea.context.save();
+                        gameArea.context.fillStyle = entity.components.appearance.color;
+                        gameArea.context.translate(entity.components.position.x + entity.components.appearance.skeleton.rightleg.x, gameArea.canvas.height - entity.components.appearance.height + 88 - gameArea.canvas.floor);
+                        gameArea.context.fill(entity.components.appearance.skeleton.rightleg.path);
+                        gameArea.context.restore();
+                    }
+
+
+
+
+                } else {
+                    gameArea.context.save();
+                    gameArea.context.translate(entity.components.position.x, gameArea.canvas.height - entity.components.appearance.height - gameArea.canvas.floor);
+                    gameArea.context.fillStyle = entity.components.appearance.color;
+                    gameArea.context.fillRect(0, 0, entity.components.appearance.width, entity.components.appearance.height);
+                    gameArea.context.restore();
+                }
 
                 // show name
                 if (entity.components.lore) {
                     gameArea.context.font = '19px Helvetica, Arial, Sans-Serif';
                     gameArea.context.fillStyle = '#fff';
                     gameArea.context.textAlign = 'center';
-                    gameArea.context.fillText(entity.components.lore.name, entity.components.position.xPos + entity.components.appearance.width / 2, gameArea.canvas.height - gameArea.canvas.floor - entity.components.appearance.height - 20);
+                    gameArea.context.fillText(entity.components.lore.name, entity.components.position.x + entity.components.appearance.width / 2, gameArea.canvas.height - gameArea.canvas.floor - entity.components.appearance.height - 20);
                 } else {
                     gameArea.context.font = '19px Helvetica, Arial, Sans-Serif';
                     gameArea.context.fillStyle = '#fff';
                     gameArea.context.textAlign = 'center';
-                    gameArea.context.fillText('???', entity.components.position.xPos + entity.components.appearance.width / 2, gameArea.canvas.height - gameArea.canvas.floor - entity.components.appearance.height - 20);
+                    gameArea.context.fillText('???', entity.components.position.x + entity.components.appearance.width / 2, gameArea.canvas.height - gameArea.canvas.floor - entity.components.appearance.height - 20);
                 }
                 if (entity.components.status) {
                     // show hp health bar
                     gameArea.context.save();
-                    gameArea.context.translate(entity.components.position.xPos, gameArea.canvas.height - gameArea.canvas.floor - entity.components.appearance.height - 13);
+                    gameArea.context.translate(entity.components.position.x, gameArea.canvas.height - gameArea.canvas.floor - entity.components.appearance.height - 13);
 
                     if (entity.components.status.hp * 100 / entity.components.status.maxHP >= 60) {
                         gameArea.context.fillStyle = 'green';
@@ -821,7 +1124,7 @@ function game(width, height) {
                 if (entity.components.combat.takingDamage) {
                     // show damage indicator
                     gameArea.context.save();
-                    gameArea.context.translate(entity.components.position.xPos + entity.components.appearance.width / 2 - 20, gameArea.canvas.height - gameArea.canvas.floor - entity.components.appearance.height / 2 - 40);
+                    gameArea.context.translate(entity.components.position.x + entity.components.appearance.width / 2 - 20, gameArea.canvas.height - gameArea.canvas.floor - entity.components.appearance.height / 2 - 40);
 
                     gameArea.context.fillStyle = 'red';
                     let indicatorShape = new Path2D('M26.195 40l2.787-10.901L40 25.089l-7.697-9.757 3.03-12.676L23.387 7.67 13.044 0l-1.923 12.127L0 16.28l9.072 7.448L8.457 36.2l9.864-3.874z');
@@ -831,12 +1134,12 @@ function game(width, height) {
                     gameArea.context.font = '22px Helvetica, Arial, Sans-Serif';
                     gameArea.context.fillStyle = '#fff';
                     gameArea.context.textAlign = 'center';
-                    gameArea.context.fillText(entity.components.combat.lastDamage, entity.components.position.xPos + entity.components.appearance.width / 2, gameArea.canvas.height - gameArea.canvas.floor - entity.components.appearance.height / 2 - 12);
+                    gameArea.context.fillText(entity.components.combat.lastDamage, entity.components.position.x + entity.components.appearance.width / 2, gameArea.canvas.height - gameArea.canvas.floor - entity.components.appearance.height / 2 - 12);
 
 
                 } else if (entity.components.combat.evadingHit) {
                     gameArea.context.save();
-                    gameArea.context.translate(entity.components.position.xPos + entity.components.appearance.width / 2 - 30, gameArea.canvas.height - gameArea.canvas.floor - entity.components.appearance.height / 2 - 40);
+                    gameArea.context.translate(entity.components.position.x + entity.components.appearance.width / 2 - 30, gameArea.canvas.height - gameArea.canvas.floor - entity.components.appearance.height / 2 - 40);
                     gameArea.context.fillStyle = 'white';
                     let indicatorShape = new Path2D('M.11 19.344L3.462 5.54c1.9-1.333 3.568-1.924 5.003-1.774 2.076.219 5.11 1.819 5.634 4.07 1.563-2.042 4.423-3.013 6.557-2.788 1.371.144 3.05 4.572 2.898 6.02l-1.117 10.623-3.562.297 1.093-10.401c.187-1.772-.665-2.295-2.066-2.442-1.457-.153-1.406-.013-3.223 1.886l-1.093 10.401-4.183-1.111 1.76-10.108c.187-1.78-1.07-1.889-2.499-2.039-1.419-.149-1.13.007-2.967 1.913L3.323 20.353.11 19.343zm27.189 2.552l1.136-7.624-.47-5.865 4.306-.699c.336 7.626.13 12.508-.62 14.646-.749 2.137-2.2 1.984-4.352-.458zm1.053-16.034c-.364-1.691-.49-2.701-.377-3.03.112-.327.79-1.018 2.032-2.07l2.037 2.345-.254 2.412-3.438.343zm12.01 18.745c-1.286-.135-2.817-.599-4.592-1.392-.01-1.302.08-2.164.272-2.586.15-.332.572-.6 1.267-.806 1.742 1.108 6.376 1.335 6.445.677.068-.641-1.12-1.806-3.561-3.494-2.323-1.265-4.296-3.215-4.096-5.11.142-1.353 3.443-4.716 5.11-4.541.867.091 2.635.036 3.886.408l2.679 1.589-1.35 3.628c-1.522-.632-2.826-2.29-3.75-2.387-1.81-.19-1.855.47-1.993 1.784-.06.565.674 1.557 2.2 2.976 1.466.809 2.48 1.606 3.043 2.392.562.786 1.347 2.976 1.234 4.052-.143 1.362-5.118 2.987-6.795 2.81zm14.915 1.568c-1.285-.135-2.816-.6-4.591-1.393l.282-1.862c1.742 1.107 4.655-.075 5.234-.458.58-.382 1.905-2.23.476-3.016-3.447-1.656-5.104-3.116-4.971-4.38.142-1.352.949-3.6 1.988-4.275 1.039-.676 2.392-.926 4.058-.751.867.091 1.926.323 3.178.695l.573.176-.823 3.568c-1.522-.632-5.378-1.894-5.516-.58-.089.848 1.183 2.094 2.49 2.706l1.688 1.078c1.465.809 2.282 3.347 2.17 4.424-.144 1.362-.204 1.014-1.372 1.777-1.169.763-3.187 2.467-4.864 2.291z');
                     gameArea.context.fill(indicatorShape);
@@ -855,7 +1158,7 @@ function game(width, height) {
                     if (entity.components.combat.isTargeted) {
                         // target indicator
                         gameArea.context.save();
-                        gameArea.context.translate(entity.components.position.xPos + entity.components.appearance.width / 2 - 7, gameArea.canvas.height - gameArea.canvas.floor - entity.components.appearance.height - 60);
+                        gameArea.context.translate(entity.components.position.x + entity.components.appearance.width / 2 - 7, gameArea.canvas.height - gameArea.canvas.floor - entity.components.appearance.height - 60);
 
                         gameArea.context.fillStyle = 'orange';
                         let indicatorShape = new Path2D('M0,4 L7,0 L14,4 L7,20 L0,4 Z');
@@ -880,7 +1183,7 @@ function game(width, height) {
         });
         NPCs.forEach((entity) =>{
             NPCBehaviour(entity);
-            updateToFaceCurrentTarget(entity)
+            updateToFaceCurrentTarget(entity);
         });
         entities.forEach((entity) =>{
             updateEntityAttackRange(entity);
