@@ -305,6 +305,7 @@ function game(width, height) {
 
     gameArea.bgImg = new Image(gameArea.canvas.width, gameArea.canvas.height);
     gameArea.bgImg.src = 'https://i.ytimg.com/vi/HzrhHFxTY8Y/maxresdefault.jpg';
+    gameArea.bgImg.src = 'assets/bg.png';
     gameArea.bgx = 0;
 
     const player = Object.create(entity).init();
