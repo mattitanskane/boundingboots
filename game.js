@@ -270,13 +270,17 @@ components.stats = {
     }
 };
 components.combat = {
-    init() {
+    init(weaponRange) {
         this._name = 'combat';
         this.inBattle = false;
         this.currentTarget = null;
         this.isTargeted = null;
         this.currentAttacker = null;
-        this.weaponRange = 50;
+        if (!weaponRange) {
+            this.weaponRange = 50;
+        } else {
+            this.weaponRange = weaponRange;
+        }
         this.attackRange = this.weaponRange;
         this.weaponDelay = 300 + Math.random() * 2000;
         this.battleTransition = false;
@@ -330,7 +334,7 @@ function game(width, height) {
     const playerPosition = Object.create(components.position).init(50, 0, 2.1);
     const playerLore = Object.create(components.lore).init('Bobby');
     const playerStatus = Object.create(components.status).init();
-    const playerCombat = Object.create(components.combat).init();
+    const playerCombat = Object.create(components.combat).init(200);
     const playerInventory = Object.create(components.inventory).init();
 
     player.addComponent(playerControlled);
