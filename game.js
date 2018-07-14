@@ -62,20 +62,6 @@ components.appearance = {
     init(width, height, color) {
         this._name = 'appearance';
 
-        if (!width) {
-            const randomWidth = Math.floor(60 + 80 * Math.random());
-            this.width = randomWidth;
-        } else {
-            this.width = width;
-        }
-
-        if (!height) {
-            const randomHeight = Math.floor(100 + 120 * Math.random());
-            this.height = randomHeight;
-        } else {
-            this.height = height;
-        }
-
         if (!color) {
             const randomColor = 'rgb(' + (Math.floor(Math.random() * 256)) + ',' + (Math.floor(Math.random() * 256)) + ',' + (Math.floor(Math.random() * 256)) + ')';
             this.color = randomColor;
@@ -84,40 +70,47 @@ components.appearance = {
         }
 
         this.animated = true;
+        this.sprite = new Image();
+        this.sprite.src = 'assets/bobby.png';
         this.skeleton = {
             lefthand: {
                 speed: 0.3,
+                direction: 0,
                 x: 40,
                 xMax: 40,
                 xMin: 40,
-                y: 30,
-                yMax: 30,
-                yMin: 30,
+                y: 65,
+                yMax: 65,
+                yMin: 65,
                 rotation: 0,
                 rotationMax: -4,
                 rotationMin: 2,
-                direction: 0,
-                path: new Path2D('M33.335 31.132l-23.09 15.88L-.04 36.522l15.01-12.02L-.04 5.834 13.75.808z'),
-                img: null
+                spriteX: 200,
+                spriteY: 0,
+                spriteWidth: 108,
+                spriteHeight: 150
             },
             leftleg: {
                 speed: 0.6,
-                x: 25,
+                direction: 0,
+                x: 40,
                 xMax: 40,
                 xMin: 40,
-                y: 88,
-                yMax: 88,
-                yMin: 88,
+                y: 165,
+                yMax: 165,
+                yMin: 165,
                 rotation: 0,
                 rotationMax: -8,
                 rotationMin: 6,
-                direction: 0,
-                path: new Path2D('M7.037 25.952L.943 9.18 20.413.145l5.265 30.929-1.372 30.929H8.61z'),
-                img: null
+                spriteX: 300,
+                spriteY: 0,
+                spriteWidth: 75,
+                spriteHeight: 140
             },
             head: {
                 speed: 0.1,
-                x: 5,
+                direction: 0,
+                x: 30,
                 xMax: 40,
                 xMin: 40,
                 y: 0,
@@ -126,54 +119,76 @@ components.appearance = {
                 rotation: 0,
                 rotationMax: -44,
                 rotationMin: 40,
-                direction: 0,
-                path: new Path2D('M0 .155h33.254l-5.03 14.57L31.864 33 9.725 31.163 0 16.577z'),
-                img: null
+                spriteX: 0,
+                spriteY: 0,
+                spriteWidth: 60,
+                spriteHeight: 80
             },
             torso: {
                 speed: 0.2,
+                direction: 0,
                 x: 0,
                 xMax: 0,
                 xMin: 0,
-                y: 37,
-                yMax: 39,
-                yMin: 36,
+                y: 67,
+                yMax: 69,
+                yMin: 66,
                 rotation: 0,
                 rotationMax: -44,
                 rotationMin: 40,
-                direction: 0,
-                path: new Path2D('M0 0h43l-2.69 36.208L43 48H0l3.883-14.632z'),
-                img: null
+                spriteX: 60,
+                spriteY: 0,
+                spriteWidth: 116,
+                spriteHeight: 160
             },
             righthand: {
                 speed: 0.3,
-                x: 25,
-                y: 30,
-                yMax: 30,
-                yMin: 30,
+                direction: 0,
+                x: -40,
+                xMax: -40,
+                xMin: -40,
+                y: 65,
+                yMax: 65,
+                yMin: 65,
                 rotation: 0,
                 rotationMax: -6,
                 rotationMin: 4,
-                direction: 0,
-                path: new Path2D('M0 20.553L17.762 0l11.77 8.222-11.77 19.674-3.148 22.938H3.422z'),
-                img: null
+                spriteX: 170,
+                spriteY: 0,
+                spriteWidth: 70,
+                spriteHeight: 150
             },
             rightleg: {
                 speed: 0.6,
-                x: -8,
-                xMax: 40,
-                xMin: 40,
-                y: 88,
-                yMax: 88,
-                yMin: 88,
+                direction: 0,
+                x: 0,
+                xMax: 0,
+                xMin: 0,
+                y: 165,
+                yMax: 165,
+                yMin: 165,
                 rotation: 0,
                 rotationMax: -8,
                 rotationMin: 6,
-                direction: 0,
-                path: new Path2D('M2.037 25.952L5.981 0l20.257 10.43-6.932 22.132-2.353 29.441H0z'),
-                img: null
+                spriteX: 375,
+                spriteY: 0,
+                spriteWidth: 75,
+                spriteHeight: 140
             }
         };
+
+        if (!width) {
+            this.width = this.skeleton.torso.spriteWidth;
+        } else {
+            this.width = width;
+        }
+
+        if (!height) {
+            this.height = this.skeleton.torso.spriteHeight + this.skeleton.head.spriteHeight;
+        } else {
+            this.height = height;
+        }
+
 
         return this;
     }
@@ -311,9 +326,9 @@ function game(width, height) {
     const player = Object.create(entity).init();
 
     const playerControlled = Object.create(components.playerControlled).init();
-    const playerAppearance = Object.create(components.appearance).init(109, 150, 'tomato');
+    const playerAppearance = Object.create(components.appearance).init(null, 300);
     const playerPosition = Object.create(components.position).init(50, 0, 2.1);
-    const playerLore = Object.create(components.lore).init('Daddy');
+    const playerLore = Object.create(components.lore).init('Bobby');
     const playerStatus = Object.create(components.status).init();
     const playerCombat = Object.create(components.combat).init();
     const playerInventory = Object.create(components.inventory).init();
@@ -331,7 +346,7 @@ function game(width, height) {
     function spawnEnemy() {
         const enemy = Object.create(entity).init();
 
-        enemy.addComponent( Object.create(components.appearance).init() );
+        enemy.addComponent( Object.create(components.appearance).init(null, 300) );
         enemy.addComponent( Object.create(components.position).init() );
         enemy.addComponent( Object.create(components.lore).init() );
         enemy.addComponent( Object.create(components.combat).init() );
@@ -862,6 +877,188 @@ function game(width, height) {
         }
         gameArea.context.restore();
     }
+    function animateWalk(entity) {
+
+        // left hand
+        // direction 0 === idle
+        if (entity.components.appearance.skeleton.lefthand.direction === 0) {
+            entity.components.appearance.skeleton.lefthand.direction = 1;
+        }
+        // alternate animation directions starting with direction 1
+        if (entity.components.appearance.skeleton.lefthand.direction === 1) {
+            entity.components.appearance.skeleton.lefthand.rotation -= entity.components.appearance.skeleton.lefthand.speed;
+            if (entity.components.appearance.skeleton.lefthand.rotation <= entity.components.appearance.skeleton.lefthand.rotationMax) {
+                entity.components.appearance.skeleton.lefthand.direction = -1;
+            }
+        } else if (entity.components.appearance.skeleton.lefthand.direction === -1) {
+            entity.components.appearance.skeleton.lefthand.rotation += entity.components.appearance.skeleton.lefthand.speed;
+            if (entity.components.appearance.skeleton.lefthand.rotation >= entity.components.appearance.skeleton.lefthand.rotationMin) {
+                entity.components.appearance.skeleton.lefthand.direction = 1;
+            }
+        }
+        gameArea.context.save();
+        gameArea.context.fillStyle = entity.components.appearance.color;
+        gameArea.context.translate(entity.components.position.x + entity.components.appearance.skeleton.lefthand.x, gameArea.canvas.height - entity.components.appearance.height + entity.components.appearance.skeleton.lefthand.y - gameArea.canvas.floor);
+        gameArea.context.rotate(entity.components.appearance.skeleton.lefthand.rotation * Math.PI / 180);
+        gameArea.context.drawImage(entity.components.appearance.sprite, entity.components.appearance.skeleton.lefthand.spriteX, entity.components.appearance.skeleton.lefthand.spriteY, entity.components.appearance.skeleton.lefthand.spriteWidth, entity.components.appearance.skeleton.lefthand.spriteHeight, 0, 0, entity.components.appearance.skeleton.lefthand.spriteWidth, entity.components.appearance.skeleton.lefthand.spriteHeight);
+        gameArea.context.restore();
+
+        // left leg
+        if (entity.components.appearance.skeleton.leftleg.direction === 0) {
+            entity.components.appearance.skeleton.leftleg.direction = 1;
+        }
+        if (entity.components.appearance.skeleton.leftleg.direction === 1) {
+            entity.components.appearance.skeleton.leftleg.rotation -= entity.components.appearance.skeleton.leftleg.speed;
+            if (entity.components.appearance.skeleton.leftleg.rotation <= entity.components.appearance.skeleton.leftleg.rotationMax) {
+                entity.components.appearance.skeleton.leftleg.direction = -1;
+            }
+        } else if (entity.components.appearance.skeleton.leftleg.direction === -1) {
+            entity.components.appearance.skeleton.leftleg.rotation += entity.components.appearance.skeleton.leftleg.speed;
+            if (entity.components.appearance.skeleton.leftleg.rotation >= entity.components.appearance.skeleton.leftleg.rotationMin) {
+                entity.components.appearance.skeleton.leftleg.direction = 1;
+            }
+        }
+        gameArea.context.save();
+        gameArea.context.fillStyle = entity.components.appearance.color;
+        gameArea.context.translate(entity.components.position.x + entity.components.appearance.skeleton.leftleg.x, gameArea.canvas.height - entity.components.appearance.height + entity.components.appearance.skeleton.leftleg.y - gameArea.canvas.floor);
+        gameArea.context.rotate(entity.components.appearance.skeleton.leftleg.rotation * Math.PI / 180);
+        gameArea.context.drawImage(entity.components.appearance.sprite, entity.components.appearance.skeleton.leftleg.spriteX, entity.components.appearance.skeleton.leftleg.spriteY, entity.components.appearance.skeleton.leftleg.spriteWidth, entity.components.appearance.skeleton.leftleg.spriteHeight, 0, 0, entity.components.appearance.skeleton.leftleg.spriteWidth, entity.components.appearance.skeleton.leftleg.spriteHeight);
+        gameArea.context.restore();
+        // right leg
+        if (entity.components.appearance.skeleton.rightleg.direction === 0) {
+            entity.components.appearance.skeleton.rightleg.direction = -1;
+        }
+        if (entity.components.appearance.skeleton.rightleg.direction === 1) {
+            entity.components.appearance.skeleton.rightleg.rotation -= entity.components.appearance.skeleton.rightleg.speed;
+            if (entity.components.appearance.skeleton.rightleg.rotation <= entity.components.appearance.skeleton.rightleg.rotationMax) {
+                entity.components.appearance.skeleton.rightleg.direction = -1;
+            }
+        } else if (entity.components.appearance.skeleton.rightleg.direction === -1) {
+            entity.components.appearance.skeleton.rightleg.rotation += entity.components.appearance.skeleton.rightleg.speed;
+            if (entity.components.appearance.skeleton.rightleg.rotation >= entity.components.appearance.skeleton.rightleg.rotationMin) {
+                entity.components.appearance.skeleton.rightleg.direction = 1;
+            }
+        }
+        gameArea.context.save();
+        gameArea.context.fillStyle = entity.components.appearance.color;
+        gameArea.context.translate(entity.components.position.x + entity.components.appearance.skeleton.rightleg.x, gameArea.canvas.height - entity.components.appearance.height + entity.components.appearance.skeleton.rightleg.y - gameArea.canvas.floor);
+        gameArea.context.rotate(entity.components.appearance.skeleton.rightleg.rotation * Math.PI / 180);
+        gameArea.context.drawImage(entity.components.appearance.sprite, entity.components.appearance.skeleton.rightleg.spriteX, entity.components.appearance.skeleton.rightleg.spriteY, entity.components.appearance.skeleton.rightleg.spriteWidth, entity.components.appearance.skeleton.rightleg.spriteHeight, 0, 0, entity.components.appearance.skeleton.rightleg.spriteWidth, entity.components.appearance.skeleton.rightleg.spriteHeight);
+        gameArea.context.restore();
+
+        // torso
+        if (entity.components.appearance.skeleton.torso.direction === 0) {
+            entity.components.appearance.skeleton.torso.direction = 1;
+        }
+        if (entity.components.appearance.skeleton.torso.direction === 1) {
+            entity.components.appearance.skeleton.torso.y -= entity.components.appearance.skeleton.torso.speed;
+            if (entity.components.appearance.skeleton.torso.y <= entity.components.appearance.skeleton.torso.yMin) {
+                entity.components.appearance.skeleton.torso.direction = -1;
+            }
+        } else if (entity.components.appearance.skeleton.torso.direction === -1) {
+            entity.components.appearance.skeleton.torso.y += entity.components.appearance.skeleton.torso.speed;
+            if (entity.components.appearance.skeleton.torso.y >= entity.components.appearance.skeleton.torso.yMax) {
+                entity.components.appearance.skeleton.torso.direction = 1;
+            }
+        }
+        gameArea.context.save();
+        gameArea.context.fillStyle = entity.components.appearance.color;
+        gameArea.context.translate(entity.components.position.x + entity.components.appearance.skeleton.torso.x, gameArea.canvas.height - entity.components.appearance.height + entity.components.appearance.skeleton.torso.y - gameArea.canvas.floor);
+        gameArea.context.rotate(entity.components.appearance.skeleton.torso.rotation * Math.PI / 180);
+        gameArea.context.drawImage(entity.components.appearance.sprite, entity.components.appearance.skeleton.torso.spriteX, entity.components.appearance.skeleton.torso.spriteY, entity.components.appearance.skeleton.torso.spriteWidth, entity.components.appearance.skeleton.torso.spriteHeight, 0, 0, entity.components.appearance.skeleton.torso.spriteWidth, entity.components.appearance.skeleton.torso.spriteHeight);
+        gameArea.context.restore();
+        // head
+        if (entity.components.appearance.skeleton.head.direction === 0) {
+            entity.components.appearance.skeleton.head.direction = 1;
+        }
+        if (entity.components.appearance.skeleton.head.direction === 1) {
+            entity.components.appearance.skeleton.head.y -= entity.components.appearance.skeleton.head.speed;
+            if (entity.components.appearance.skeleton.head.y <= entity.components.appearance.skeleton.head.yMin) {
+                entity.components.appearance.skeleton.head.direction = -1;
+            }
+        } else if (entity.components.appearance.skeleton.head.direction === -1) {
+            entity.components.appearance.skeleton.head.y += entity.components.appearance.skeleton.head.speed;
+            if (entity.components.appearance.skeleton.head.y >= entity.components.appearance.skeleton.head.yMax) {
+                entity.components.appearance.skeleton.head.direction = 1;
+            }
+        }
+        gameArea.context.save();
+        gameArea.context.fillStyle = entity.components.appearance.color;
+        gameArea.context.translate(entity.components.position.x + entity.components.appearance.skeleton.head.x, gameArea.canvas.height - entity.components.appearance.height + entity.components.appearance.skeleton.head.y - gameArea.canvas.floor);
+        gameArea.context.rotate(entity.components.appearance.skeleton.head.rotation * Math.PI / 180);
+
+        gameArea.context.drawImage(entity.components.appearance.sprite, entity.components.appearance.skeleton.head.spriteX, entity.components.appearance.skeleton.head.spriteY, entity.components.appearance.skeleton.head.spriteWidth, entity.components.appearance.skeleton.head.spriteHeight, 0, 0, entity.components.appearance.skeleton.head.spriteWidth, entity.components.appearance.skeleton.head.spriteHeight);
+
+        gameArea.context.restore();
+        // right hand
+        if (entity.components.appearance.skeleton.righthand.direction === 0) {
+            entity.components.appearance.skeleton.righthand.direction = -1;
+        }
+        if (entity.components.appearance.skeleton.righthand.direction === 1) {
+            entity.components.appearance.skeleton.righthand.rotation -= entity.components.appearance.skeleton.righthand.speed;
+            if (entity.components.appearance.skeleton.righthand.rotation <= entity.components.appearance.skeleton.righthand.rotationMax) {
+                entity.components.appearance.skeleton.righthand.direction = -1;
+            }
+        } else if (entity.components.appearance.skeleton.righthand.direction === -1) {
+            entity.components.appearance.skeleton.righthand.rotation += entity.components.appearance.skeleton.righthand.speed;
+            if (entity.components.appearance.skeleton.righthand.rotation >= entity.components.appearance.skeleton.righthand.rotationMin) {
+                entity.components.appearance.skeleton.righthand.direction = 1;
+            }
+        }
+        gameArea.context.save();
+        gameArea.context.fillStyle = entity.components.appearance.color;
+        gameArea.context.translate(entity.components.position.x + entity.components.appearance.skeleton.righthand.x, gameArea.canvas.height - entity.components.appearance.height + entity.components.appearance.skeleton.righthand.y - gameArea.canvas.floor);
+        gameArea.context.rotate(entity.components.appearance.skeleton.righthand.rotation * Math.PI / 180);
+        gameArea.context.drawImage(entity.components.appearance.sprite, entity.components.appearance.skeleton.righthand.spriteX, entity.components.appearance.skeleton.righthand.spriteY, entity.components.appearance.skeleton.righthand.spriteWidth, entity.components.appearance.skeleton.righthand.spriteHeight, 0, 0, entity.components.appearance.skeleton.righthand.spriteWidth, entity.components.appearance.skeleton.righthand.spriteHeight);
+        gameArea.context.restore();
+    }
+    function animateIdle(entity) {
+        // not moving.... TODO: needs idle animation
+        entity.components.appearance.skeleton.leftleg.direction = 0;
+        entity.components.appearance.skeleton.lefthand.direction = 0;
+        entity.components.appearance.skeleton.head.direction = 0;
+        entity.components.appearance.skeleton.torso.direction = 0;
+        entity.components.appearance.skeleton.rightleg.direction = 0;
+        entity.components.appearance.skeleton.righthand.direction = 0;
+
+        // left hand
+        gameArea.context.save();
+        gameArea.context.fillStyle = entity.components.appearance.color;
+        gameArea.context.translate(entity.components.position.x + entity.components.appearance.skeleton.lefthand.x, gameArea.canvas.height - entity.components.appearance.height + entity.components.appearance.skeleton.lefthand.y - gameArea.canvas.floor);
+        gameArea.context.drawImage(entity.components.appearance.sprite, entity.components.appearance.skeleton.lefthand.spriteX, entity.components.appearance.skeleton.lefthand.spriteY, entity.components.appearance.skeleton.lefthand.spriteWidth, entity.components.appearance.skeleton.lefthand.spriteHeight, 0, 0, entity.components.appearance.skeleton.lefthand.spriteWidth, entity.components.appearance.skeleton.lefthand.spriteHeight);
+        gameArea.context.restore();
+        // left leg
+        gameArea.context.save();
+        gameArea.context.fillStyle = entity.components.appearance.color;
+        gameArea.context.translate(entity.components.position.x + entity.components.appearance.skeleton.leftleg.x, gameArea.canvas.height - entity.components.appearance.height + entity.components.appearance.skeleton.leftleg.y - gameArea.canvas.floor);
+        gameArea.context.drawImage(entity.components.appearance.sprite, entity.components.appearance.skeleton.leftleg.spriteX, entity.components.appearance.skeleton.leftleg.spriteY, entity.components.appearance.skeleton.leftleg.spriteWidth, entity.components.appearance.skeleton.leftleg.spriteHeight, 0, 0, entity.components.appearance.skeleton.leftleg.spriteWidth, entity.components.appearance.skeleton.leftleg.spriteHeight);
+        gameArea.context.restore();
+
+        // right leg
+        gameArea.context.save();
+        gameArea.context.fillStyle = entity.components.appearance.color;
+        gameArea.context.translate(entity.components.position.x + entity.components.appearance.skeleton.rightleg.x, gameArea.canvas.height - entity.components.appearance.height + entity.components.appearance.skeleton.rightleg.y - gameArea.canvas.floor);
+        gameArea.context.drawImage(entity.components.appearance.sprite, entity.components.appearance.skeleton.rightleg.spriteX, entity.components.appearance.skeleton.rightleg.spriteY, entity.components.appearance.skeleton.rightleg.spriteWidth, entity.components.appearance.skeleton.rightleg.spriteHeight, 0, 0, entity.components.appearance.skeleton.rightleg.spriteWidth, entity.components.appearance.skeleton.rightleg.spriteHeight);
+        gameArea.context.restore();
+        // torso
+        gameArea.context.save();
+        gameArea.context.fillStyle = entity.components.appearance.color;
+        gameArea.context.translate(entity.components.position.x, gameArea.canvas.height - entity.components.appearance.height + entity.components.appearance.skeleton.torso.y - gameArea.canvas.floor);
+        gameArea.context.drawImage(entity.components.appearance.sprite, entity.components.appearance.skeleton.torso.spriteX, entity.components.appearance.skeleton.torso.spriteY, entity.components.appearance.skeleton.torso.spriteWidth, entity.components.appearance.skeleton.torso.spriteHeight, 0, 0, entity.components.appearance.skeleton.torso.spriteWidth, entity.components.appearance.skeleton.torso.spriteHeight);
+        gameArea.context.restore();
+        // head
+        gameArea.context.save();
+        gameArea.context.fillStyle = entity.components.appearance.color;
+        gameArea.context.translate(entity.components.position.x + entity.components.appearance.skeleton.head.x, gameArea.canvas.height - entity.components.appearance.height - gameArea.canvas.floor);
+        gameArea.context.drawImage(entity.components.appearance.sprite, entity.components.appearance.skeleton.head.spriteX, entity.components.appearance.skeleton.head.spriteY, entity.components.appearance.skeleton.head.spriteWidth, entity.components.appearance.skeleton.head.spriteHeight, 0, 0, entity.components.appearance.skeleton.head.spriteWidth, entity.components.appearance.skeleton.head.spriteHeight);
+        gameArea.context.restore();
+        // right hand
+        gameArea.context.save();
+        gameArea.context.fillStyle = entity.components.appearance.color;
+        gameArea.context.translate(entity.components.position.x + entity.components.appearance.skeleton.righthand.x, gameArea.canvas.height - entity.components.appearance.height + entity.components.appearance.skeleton.righthand.y - gameArea.canvas.floor);
+        gameArea.context.drawImage(entity.components.appearance.sprite, entity.components.appearance.skeleton.righthand.spriteX, entity.components.appearance.skeleton.righthand.spriteY, entity.components.appearance.skeleton.righthand.spriteWidth, entity.components.appearance.skeleton.righthand.spriteHeight, 0, 0, entity.components.appearance.skeleton.righthand.spriteWidth, entity.components.appearance.skeleton.righthand.spriteHeight);
+        gameArea.context.restore();
+    }
     function render() {
         updateBackground();
         updateFloor();
@@ -869,218 +1066,15 @@ function game(width, height) {
         entities.forEach((entity) =>{
             // draw alive entities
             if (entity.components.status.isAlive) {
+                // animated entities
                 if (entity.components.appearance.animated) {
-
-
-
-
-
                     if (entity.components.position.movingRight || entity.components.position.movingLeft) {
-
-                        // left hand
-                        if (entity.components.appearance.skeleton.lefthand.direction === 0) {
-                            entity.components.appearance.skeleton.lefthand.direction = 1;
-                        }
-                        if (entity.components.appearance.skeleton.lefthand.direction === 1) {
-                            entity.components.appearance.skeleton.lefthand.rotation -= entity.components.appearance.skeleton.lefthand.speed;
-                            if (entity.components.appearance.skeleton.lefthand.rotation <= entity.components.appearance.skeleton.lefthand.rotationMax) {
-                                entity.components.appearance.skeleton.lefthand.direction = -1;
-                            }
-                        } else if (entity.components.appearance.skeleton.lefthand.direction === -1) {
-                            entity.components.appearance.skeleton.lefthand.rotation += entity.components.appearance.skeleton.lefthand.speed;
-                            if (entity.components.appearance.skeleton.lefthand.rotation >= entity.components.appearance.skeleton.lefthand.rotationMin) {
-                                entity.components.appearance.skeleton.lefthand.direction = 1;
-                            }
-                        }
-                        gameArea.context.save();
-                        gameArea.context.fillStyle = entity.components.appearance.color;
-                        gameArea.context.translate(entity.components.position.x + entity.components.appearance.skeleton.lefthand.x, gameArea.canvas.height - entity.components.appearance.height + entity.components.appearance.skeleton.lefthand.y - gameArea.canvas.floor);
-                        gameArea.context.rotate(entity.components.appearance.skeleton.lefthand.rotation * Math.PI / 180);
-                        if (entity.components.appearance.skeleton.lefthand.path) {
-                            gameArea.context.fill(entity.components.appearance.skeleton.lefthand.path);
-                        } else if (entity.components.appearance.skeleton.lefthand.img) {
-                            // TODO: Figure out how to use images
-                        }
-                        gameArea.context.restore();
-                        // left leg
-                        if (entity.components.appearance.skeleton.leftleg.direction === 0) {
-                            entity.components.appearance.skeleton.leftleg.direction = 1;
-                        }
-                        if (entity.components.appearance.skeleton.leftleg.direction === 1) {
-                            entity.components.appearance.skeleton.leftleg.rotation -= entity.components.appearance.skeleton.leftleg.speed;
-                            if (entity.components.appearance.skeleton.leftleg.rotation <= entity.components.appearance.skeleton.leftleg.rotationMax) {
-                                entity.components.appearance.skeleton.leftleg.direction = -1;
-                            }
-                        } else if (entity.components.appearance.skeleton.leftleg.direction === -1) {
-                            entity.components.appearance.skeleton.leftleg.rotation += entity.components.appearance.skeleton.leftleg.speed;
-                            if (entity.components.appearance.skeleton.leftleg.rotation >= entity.components.appearance.skeleton.leftleg.rotationMin) {
-                                entity.components.appearance.skeleton.leftleg.direction = 1;
-                            }
-                        }
-                        gameArea.context.save();
-                        gameArea.context.fillStyle = entity.components.appearance.color;
-                        gameArea.context.translate(entity.components.position.x + entity.components.appearance.skeleton.leftleg.x, gameArea.canvas.height - entity.components.appearance.height + entity.components.appearance.skeleton.leftleg.y - gameArea.canvas.floor);
-                        gameArea.context.rotate(entity.components.appearance.skeleton.leftleg.rotation * Math.PI / 180);
-                        if (entity.components.appearance.skeleton.leftleg.path) {
-                            gameArea.context.fill(entity.components.appearance.skeleton.leftleg.path);
-                        } else if (entity.components.appearance.skeleton.leftleg.img) {
-                            // TODO: Figure out how to use images
-                        }
-                        gameArea.context.restore();
-
-                        // head
-                        if (entity.components.appearance.skeleton.head.direction === 0) {
-                            entity.components.appearance.skeleton.head.direction = 1;
-                        }
-                        if (entity.components.appearance.skeleton.head.direction === 1) {
-                            entity.components.appearance.skeleton.head.y -= entity.components.appearance.skeleton.head.speed;
-                            if (entity.components.appearance.skeleton.head.y <= entity.components.appearance.skeleton.head.yMin) {
-                                entity.components.appearance.skeleton.head.direction = -1;
-                            }
-                        } else if (entity.components.appearance.skeleton.head.direction === -1) {
-                            entity.components.appearance.skeleton.head.y += entity.components.appearance.skeleton.head.speed;
-                            if (entity.components.appearance.skeleton.head.y >= entity.components.appearance.skeleton.head.yMax) {
-                                entity.components.appearance.skeleton.head.direction = 1;
-                            }
-                        }
-                        gameArea.context.save();
-                        gameArea.context.fillStyle = entity.components.appearance.color;
-                        gameArea.context.translate(entity.components.position.x + entity.components.appearance.skeleton.head.x, gameArea.canvas.height - entity.components.appearance.height + entity.components.appearance.skeleton.head.y - gameArea.canvas.floor);
-                        gameArea.context.rotate(entity.components.appearance.skeleton.head.rotation * Math.PI / 180);
-                        if (entity.components.appearance.skeleton.head.path) {
-                            gameArea.context.fill(entity.components.appearance.skeleton.head.path);
-                        } else if (entity.components.appearance.skeleton.head.img) {
-                            // TODO: Figure out how to use images
-                        }
-                        gameArea.context.restore();
-                        // torso
-                        if (entity.components.appearance.skeleton.torso.direction === 0) {
-                            entity.components.appearance.skeleton.torso.direction = 1;
-                        }
-                        if (entity.components.appearance.skeleton.torso.direction === 1) {
-                            entity.components.appearance.skeleton.torso.y -= entity.components.appearance.skeleton.torso.speed;
-                            if (entity.components.appearance.skeleton.torso.y <= entity.components.appearance.skeleton.torso.yMin) {
-                                entity.components.appearance.skeleton.torso.direction = -1;
-                            }
-                        } else if (entity.components.appearance.skeleton.torso.direction === -1) {
-                            entity.components.appearance.skeleton.torso.y += entity.components.appearance.skeleton.torso.speed;
-                            if (entity.components.appearance.skeleton.torso.y >= entity.components.appearance.skeleton.torso.yMax) {
-                                entity.components.appearance.skeleton.torso.direction = 1;
-                            }
-                        }
-                        gameArea.context.save();
-                        gameArea.context.fillStyle = entity.components.appearance.color;
-                        gameArea.context.translate(entity.components.position.x + entity.components.appearance.skeleton.torso.x, gameArea.canvas.height - entity.components.appearance.height + entity.components.appearance.skeleton.torso.y - gameArea.canvas.floor);
-                        gameArea.context.rotate(entity.components.appearance.skeleton.torso.rotation * Math.PI / 180);
-                        if (entity.components.appearance.skeleton.torso.path) {
-                            gameArea.context.fill(entity.components.appearance.skeleton.torso.path);
-                        } else if (entity.components.appearance.skeleton.torso.img) {
-                            // TODO: Figure out how to use images
-                        }
-                        gameArea.context.restore();
-
-                        // right hand
-                        if (entity.components.appearance.skeleton.righthand.direction === 0) {
-                            entity.components.appearance.skeleton.righthand.direction = -1;
-                        }
-                        if (entity.components.appearance.skeleton.righthand.direction === 1) {
-                            entity.components.appearance.skeleton.righthand.rotation -= entity.components.appearance.skeleton.righthand.speed;
-                            if (entity.components.appearance.skeleton.righthand.rotation <= entity.components.appearance.skeleton.righthand.rotationMax) {
-                                entity.components.appearance.skeleton.righthand.direction = -1;
-                            }
-                        } else if (entity.components.appearance.skeleton.righthand.direction === -1) {
-                            entity.components.appearance.skeleton.righthand.rotation += entity.components.appearance.skeleton.righthand.speed;
-                            if (entity.components.appearance.skeleton.righthand.rotation >= entity.components.appearance.skeleton.righthand.rotationMin) {
-                                entity.components.appearance.skeleton.righthand.direction = 1;
-                            }
-                        }
-                        gameArea.context.save();
-                        gameArea.context.fillStyle = entity.components.appearance.color;
-                        gameArea.context.translate(entity.components.position.x - entity.components.appearance.skeleton.righthand.x, gameArea.canvas.height - entity.components.appearance.height + entity.components.appearance.skeleton.righthand.y - gameArea.canvas.floor);
-                        gameArea.context.rotate(entity.components.appearance.skeleton.righthand.rotation * Math.PI / 180);
-                        if (entity.components.appearance.skeleton.righthand.path) {
-                            gameArea.context.fill(entity.components.appearance.skeleton.righthand.path);
-                        } else if (entity.components.appearance.skeleton.righthand.img) {
-                            // TODO: Figure out how to use images
-                        }
-                        gameArea.context.restore();
-                        // right leg
-                        if (entity.components.appearance.skeleton.rightleg.direction === 0) {
-                            entity.components.appearance.skeleton.rightleg.direction = -1;
-                        }
-                        if (entity.components.appearance.skeleton.rightleg.direction === 1) {
-                            entity.components.appearance.skeleton.rightleg.rotation -= entity.components.appearance.skeleton.rightleg.speed;
-                            if (entity.components.appearance.skeleton.rightleg.rotation <= entity.components.appearance.skeleton.rightleg.rotationMax) {
-                                entity.components.appearance.skeleton.rightleg.direction = -1;
-                            }
-                        } else if (entity.components.appearance.skeleton.rightleg.direction === -1) {
-                            entity.components.appearance.skeleton.rightleg.rotation += entity.components.appearance.skeleton.rightleg.speed;
-                            if (entity.components.appearance.skeleton.rightleg.rotation >= entity.components.appearance.skeleton.rightleg.rotationMin) {
-                                entity.components.appearance.skeleton.rightleg.direction = 1;
-                            }
-                        }
-                        gameArea.context.save();
-                        gameArea.context.fillStyle = entity.components.appearance.color;
-                        gameArea.context.translate(entity.components.position.x + entity.components.appearance.skeleton.rightleg.x, gameArea.canvas.height - entity.components.appearance.height + entity.components.appearance.skeleton.rightleg.y - gameArea.canvas.floor);
-                        gameArea.context.rotate(entity.components.appearance.skeleton.rightleg.rotation * Math.PI / 180);
-                        if (entity.components.appearance.skeleton.rightleg.path) {
-                            gameArea.context.fill(entity.components.appearance.skeleton.rightleg.path);
-                        } else if (entity.components.appearance.skeleton.rightleg.img) {
-                            // TODO: Figure out how to use images
-                        }
-                        gameArea.context.restore();
-
+                        // left and right key press walk animation
+                        animateWalk(entity);
                     } else {
-                        // not moving.... TODO: needs idle animation
-                        entity.components.appearance.skeleton.leftleg.direction = 0;
-                        entity.components.appearance.skeleton.lefthand.direction = 0;
-                        entity.components.appearance.skeleton.head.direction = 0;
-                        entity.components.appearance.skeleton.torso.direction = 0;
-                        entity.components.appearance.skeleton.rightleg.direction = 0;
-                        entity.components.appearance.skeleton.righthand.direction = 0;
-
-                        // left hand
-                        gameArea.context.save();
-                        gameArea.context.fillStyle = entity.components.appearance.color;
-                        gameArea.context.translate(entity.components.position.x + entity.components.appearance.skeleton.lefthand.x, gameArea.canvas.height - entity.components.appearance.height + entity.components.appearance.skeleton.lefthand.y - gameArea.canvas.floor);
-                        gameArea.context.fill(entity.components.appearance.skeleton.lefthand.path);
-                        gameArea.context.restore();
-                        // leftleg
-                        gameArea.context.save();
-                        gameArea.context.fillStyle = entity.components.appearance.color;
-                        gameArea.context.translate(entity.components.position.x + entity.components.appearance.skeleton.leftleg.x, gameArea.canvas.height - entity.components.appearance.height + 88 - gameArea.canvas.floor);
-                        gameArea.context.fill(entity.components.appearance.skeleton.leftleg.path);
-                        gameArea.context.restore();
-
-                        // torso
-                        gameArea.context.save();
-                        gameArea.context.fillStyle = entity.components.appearance.color;
-                        gameArea.context.translate(entity.components.position.x, gameArea.canvas.height - entity.components.appearance.height + entity.components.appearance.skeleton.torso.y - gameArea.canvas.floor);
-                        gameArea.context.fill(entity.components.appearance.skeleton.torso.path);
-                        gameArea.context.restore();
-                        // head
-                        gameArea.context.save();
-                        gameArea.context.fillStyle = entity.components.appearance.color;
-                        gameArea.context.translate(entity.components.position.x + entity.components.appearance.skeleton.head.x, gameArea.canvas.height - entity.components.appearance.height - gameArea.canvas.floor);
-                        gameArea.context.fill(entity.components.appearance.skeleton.head.path);
-                        gameArea.context.restore();
-                        // right hand
-                        gameArea.context.save();
-                        gameArea.context.fillStyle = entity.components.appearance.color;
-                        gameArea.context.translate(entity.components.position.x - entity.components.appearance.skeleton.righthand.x, gameArea.canvas.height - entity.components.appearance.height + entity.components.appearance.skeleton.righthand.y - gameArea.canvas.floor);
-                        gameArea.context.fill(entity.components.appearance.skeleton.righthand.path);
-                        gameArea.context.restore();
-                        // right leg
-                        gameArea.context.save();
-                        gameArea.context.fillStyle = entity.components.appearance.color;
-                        gameArea.context.translate(entity.components.position.x + entity.components.appearance.skeleton.rightleg.x, gameArea.canvas.height - entity.components.appearance.height + 88 - gameArea.canvas.floor);
-                        gameArea.context.fill(entity.components.appearance.skeleton.rightleg.path);
-                        gameArea.context.restore();
+                        // idle animation
+                        animateIdle(entity);
                     }
-
-
-
-
                 } else {
                     gameArea.context.save();
                     gameArea.context.translate(entity.components.position.x, gameArea.canvas.height - entity.components.appearance.height - gameArea.canvas.floor);
