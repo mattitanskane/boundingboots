@@ -14,6 +14,7 @@ const moveLeft = 65;
 const moveRight = 68;
 const engageButton = 70;
 const escButton = 27;
+const spawnButton = 77;
 
 window.addEventListener('keydown', function (e) {
     e.preventDefault();
@@ -360,10 +361,6 @@ function game(width, height) {
         entities.push(enemy);
         NPCs.push(enemy);
     }
-    spawnEnemy();
-    const enemySpawnInterval = 180000;
-
-    setInterval(spawnEnemy, enemySpawnInterval);
 
     entities.push(player);
 
@@ -769,6 +766,9 @@ function game(width, height) {
 
         if (keysDown[escButton]) {
             nopeCancelGoBackRevertJustLeave(entity);
+        }
+        if (keysDown[spawnButton]) {
+            spawnEnemy();
         }
 
         if (keysDown[moveLeft]) {
