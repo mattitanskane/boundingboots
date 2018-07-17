@@ -1,3 +1,6 @@
+[![Character walking](https://i.gyazo.com/da672b772593b066c918051aae962772.gif)](https://gyazo.com/da672b772593b066c918051aae962772)
+
+
 # HTML5 Canvas game
 
 Project built on [a pretty good boilerpate by jluccisano](https://github.com/jluccisano/webpack-es6-boilerplate).
