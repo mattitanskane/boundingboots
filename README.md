@@ -30,7 +30,7 @@ Bobby's the reason I'm ditching this project. He's way too good looking to be re
 
 Disclaimer: I did not create the background image. If you did, please contact me. I stared at this picture a lot and I find it to be very nice.
 
-===
+-------------------------
 
 Project built on [a pretty good boilerpate by jluccisano](https://github.com/jluccisano/webpack-es6-boilerplate). Thanks.
 
