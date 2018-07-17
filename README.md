@@ -1,7 +1,5 @@
 # Using game development as a tool to learn JavaScript with HTML5 Canvas
 
-## Post Mortem
-
 Early 2018 I set out to learn JavaScript. I already had a grasp of a lot of the basics but my experiences were mostly in front end web development. I figured that creating a game could be a compelling of learning programming.
 
 I wanted to use game development as a tool to learn more JavaScript.
