@@ -1,9 +1,38 @@
+# Using game development as a tool to learn JavaScript with HTML5 Canvas
+
+## Post Mortem
+
+Early 2018 I set out to learn JavaScript. I already had a grasp of a lot of the basics but my experiences were mostly in front end web development. I figured that a game could be a compelling way to learn. I wanted to use game development as a tool to learn more JavaScript.
+
+I first started with learning modern JavaScript using ES6 features and I had a completely different project setup. I dabbled in Node and Templating Engines and read a bunch of articles and tutorials. I started from scratch a couple of times before ending up using what's in this repository.
+
+I finally started programming a HTML5 Canvas game and after a couple tries with other patterns or no patterns I ended up using an Entity-Component-System (ECS) pattern for the game.Eventually I ran into many unnecessarily complicated problems with ES6 modules, ESLint and Webpack that hindered me from progressing and learning the things that I felt actually mattered. I started the project from scratch once more in order to take a good crack at a couple problems before the inevitable conclusion of this stretch of the project. I ditched all the shiny JavaScript things and went with static HTML and JavaScript files to have a little fun and to prototype stuff. You can find that stuff in a separate branch.
+
+I found myself going deeper and deeper into actual game development and going further away from my original goal of learning JavaScript. I ran into pretty complex challenges with the way I wanted the characters to be animated and moving around. Not wanting to go with a sprite based characters I did some skeletal animation work with a game character I whipped up in Sketch. Turns out animating skeletal characters without the proper tools is difficult. 
+
+I ended up torn. One part of me wanted to figure this animation thing out and keep going with this project and one part of me wants to start again from nothing with a new set of goals. I never had ambitions with this project and I never felt the need of creating something complete but now I feel like this has reached a natural conclusion. I had a lot of fun with this project but I feel like starting something new from the ground up. While I was comfortable with a pretty ambiguous plan for this project I'm most likely going to focus on more concise and smaller projects to help me learn and to push me forward as a developer. With that I have decided to put this little project to pasture.
+
+Bobby's the reason I'm ditching this project. He's way too good looking to be replaced with sprites. Now enjoy some gifs of him and his friends.
+
 [![Character walking](https://i.gyazo.com/da672b772593b066c918051aae962772.gif)](https://gyazo.com/da672b772593b066c918051aae962772)
 
+[![Manual enemy spawns](https://i.gyazo.com/0a53f7af454af279726465e79b719bc5.gif)](https://gyazo.com/0a53f7af454af279726465e79b719bc5)
 
-# HTML5 Canvas game
+[![Winning a fight](https://i.gyazo.com/844aa89a3f16b958734049725b7bc37e.gif)](https://gyazo.com/844aa89a3f16b958734049725b7bc37e)
 
-Project built on [a pretty good boilerpate by jluccisano](https://github.com/jluccisano/webpack-es6-boilerplate).
+[![Finding a familiar face](https://i.gyazo.com/290760f9d934e816ce55d40ada68ad77.gif)](https://gyazo.com/290760f9d934e816ce55d40ada68ad77)
+
+[![Losing episode 1](https://i.gyazo.com/74e94e35a3f5b69d3f1966aa0028a3c0.gif)](https://gyazo.com/74e94e35a3f5b69d3f1966aa0028a3c0)
+
+[![Losing episode 2](https://i.gyazo.com/116e21ba85170fddf4515aebab031cfb.gif)](https://gyazo.com/116e21ba85170fddf4515aebab031cfb)
+
+[![Perfect game](https://i.gyazo.com/4e08b0a0fa3c03f989615d99ba6245d1.gif)](https://gyazo.com/4e08b0a0fa3c03f989615d99ba6245d1)
+
+Disclaimer: I did not create the background image. If you did, please contact me. I stared at this picture a lot and I find it to be very nice.
+
+===
+
+Project built on [a pretty good boilerpate by jluccisano](https://github.com/jluccisano/webpack-es6-boilerplate). Thanks.
 
 ## Prerequisites
 
